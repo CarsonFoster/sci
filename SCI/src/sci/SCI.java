@@ -15,8 +15,8 @@ public class SCI {
                                 + "Don't abuse it! :)";
     protected static String module = "core"; // tells what module we are currently in
     
+    // module "ober" = commands that apply regardless of module, like exit
     protected static HashMap<String, HashMap<String, Command>> commands = new HashMap<>(); // maps module -> (name -> Command object)
-    protected static HashMap<String, Command> obercommands = new HashMap<>(); // commands that apply regardless of module
     
     protected static ArrayList<String> args = new ArrayList<>(); // represents the arguments passed to the command
     protected static HashMap<String, String> env = new HashMap<>();
@@ -28,10 +28,6 @@ public class SCI {
         commands.get(c.getModule()).put(c.getName(), c); // put name -> Command into the inner hashmap for the module
     }
     
-    protected static void addOberCommand(Command c) {
-        obercommands.put(c.getName(), c);
-    }
-    
     private static void putArgs(String[] tokens) {
         args.clear(); // make sure it's empty first
         for (int i = 1; i < tokens.length; i++) { // skip the command name
@@ -39,9 +35,14 @@ public class SCI {
         }
     }
     
+    // custom error message
+    protected static void error(String msg) {
+        System.err.println("sci." + module + ": Error: " + msg);
+    }
+    
     public static void main(String[] args) {
-        // if we're debugging, don't show the intro
         SetUpCommands.main();
+        // if we're debugging, don't show the intro
         if (!DEBUG)
             System.out.println(intro);
         Scanner cin = new Scanner(System.in); // declare the console input scanner
@@ -51,7 +52,12 @@ public class SCI {
             String line = cin.nextLine().trim(); // grab the line from the console and trim any trailing whitespace
             String[] tokens = line.split(" "); // split by spaces, so into words/tokens
             putArgs(tokens);
-            
+            if (commands.get("ober").containsKey(tokens[0])) {
+                commands.get("ober").get(tokens[0]).run();
+            } else if (commands.get(module).containsKey(tokens[0])) {
+                commands.get(module).get(tokens[0]).run();
+            } else
+                error(tokens[0] + " is not an accepted command.");
         }
     }
 }
