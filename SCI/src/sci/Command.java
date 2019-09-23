@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 public class Command {
     private String module, name; // the module this command works in and its name
+    private HelpMessage help;
     
     protected static ArrayList<String> getArgs() {
         return SCI.args;
@@ -22,10 +23,18 @@ public class Command {
         SCI.env.put(key, value);
     }
     
-    protected Command(String module, String name) { // TODO: add HelpMessage support
+    protected Command(String module, String name) {
         this.module = module;
         this.name = name;
         SCI.addCommand(this);
+    }
+    
+    protected Command(String module, String name, String usage, String description, String[][] flag_info) {
+        this.module = module;
+        this.name = name;
+        help = new HelpMessage(module, name, usage, description, flag_info);
+        SCI.addCommand(this);
+        SCI.addHelp(help);
     }
     
     protected String getModule() {

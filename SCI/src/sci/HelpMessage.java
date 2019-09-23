@@ -20,12 +20,13 @@ public class HelpMessage {
                 flags.add(flag);
             }
         }
-        // TODO: add self to Help hashmap
     }
     
     public String toString() {
         String out = "Usage: " + usage + "\n";
-        out += description + "\n\n";
+        out += description;
+        if (flags.size() > 0)
+            out += "\n\n";
         for (String[] flag : flags) {
             out += "    " + flag[0];
             out += "\t\t\t" + flag[1] + "\n";

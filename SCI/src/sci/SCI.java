@@ -17,6 +17,7 @@ public class SCI {
     
     // module "ober" = commands that apply regardless of module, like exit
     protected static HashMap<String, HashMap<String, Command>> commands = new HashMap<>(); // maps module -> (name -> Command object)
+    protected static HashMap<String, HashMap<String, HelpMessage>> help = new HashMap<>();
     
     protected static ArrayList<String> args = new ArrayList<>(); // represents the arguments passed to the command
     protected static HashMap<String, String> env = new HashMap<>();
@@ -26,6 +27,13 @@ public class SCI {
             commands.put(c.getModule(), new HashMap<String, Command>()); // create empty hashmap for the module
         }
         commands.get(c.getModule()).put(c.getName(), c); // put name -> Command into the inner hashmap for the module
+    }
+    
+    protected static void addHelp(HelpMessage h) {
+        if (!help.containsKey(h.getModule())) {
+            help.put(h.getModule(), new HashMap<String, HelpMessage>());
+        }
+        help.get(h.getModule()).put(h.getName(), h);
     }
     
     private static void putArgs(String[] tokens) {
