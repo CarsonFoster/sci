@@ -8,6 +8,7 @@ import java.util.ArrayList;
  */
 public class HelpMessage {
     private String module, name, usage, description;
+    private String extended = null;
     private ArrayList<String[]> flags = new ArrayList<>();
     
     public HelpMessage(String module, String name, String usage, String description, String[][] flag_info) {
@@ -22,14 +23,24 @@ public class HelpMessage {
         }
     }
     
+    public HelpMessage(String module, String name, String usage, String description, String extended_description, String[][] flag_info) {
+        this(module, name, usage, description, flag_info);
+        extended = extended_description;
+    }
+    
     public String toString() {
-        String out = "Usage: " + usage + "\n";
+        String out = "";
+        if (usage != null)
+            out += "Usage: " + usage + "\n";
         out += description;
+        if (extended != null) {
+            out += "\n" + extended;
+        }
         if (flags.size() > 0)
-            out += "\n\n";
+            out += "\n";
         for (String[] flag : flags) {
-            out += "    " + flag[0];
-            out += "\t\t\t" + flag[1] + "\n";
+            out += "\n" + flag[0];
+            out += "\t\t\t" + flag[1];
         }
         return out;
     }
@@ -40,5 +51,9 @@ public class HelpMessage {
     
     public String getName() {
         return name;
+    }
+    
+    public String getDescription() {
+        return description;
     }
 }

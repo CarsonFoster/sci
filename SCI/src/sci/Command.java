@@ -37,6 +37,14 @@ public class Command {
         SCI.addHelp(help);
     }
     
+    protected Command(String module, String name, String usage, String description, String ext, String[][] flag_info) {
+        this.module = module;
+        this.name = name;
+        help = new HelpMessage(module, name, usage, description, ext, flag_info);
+        SCI.addCommand(this);
+        SCI.addHelp(help);
+    }
+    
     protected String getModule() {
         return module;
     }
