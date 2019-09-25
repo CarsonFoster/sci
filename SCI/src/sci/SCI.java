@@ -3,17 +3,19 @@ package sci;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
  * @author Carson Foster
  */
 public class SCI {
-    private static final boolean DEBUG = false; // will be set to true when debugging the program 
+    protected static final boolean DEBUG = false; // will be set to true when debugging the program 
     private static String intro = "Welcome to sci! sci is the Statistical Command Interface, and you can use it\n" // a simple intro message to print at beginning of execution
                                 + "to enter data, analyze the data (in a limited fashion), and graph the data.\n"
                                 + "Don't abuse it! :)";
     protected static String module = "core"; // tells what module we are currently in
+    protected static Scanner cin;
     
     // module "ober" = commands that apply regardless of module, like exit
     protected static HashMap<String, HashMap<String, Command>> commands = new HashMap<>(); // maps module -> (name -> Command object)
@@ -21,6 +23,9 @@ public class SCI {
     
     protected static ArrayList<String> args = new ArrayList<>(); // represents the arguments passed to the command
     protected static HashMap<String, String> env = new HashMap<>(); // represents environment variables
+    
+    protected static HashMap<String, List<QuantitativeDatum>> quantitative = new HashMap<>();
+    protected static HashMap<String, List<CategoricalUnit>> categorical = new HashMap<>();
     
     protected static void addCommand(Command c) { // adds a command into the command hashmap
         if (!commands.containsKey(c.getModule())) { // module not in commands hashmap yet
@@ -55,7 +60,7 @@ public class SCI {
         // if we're debugging, don't show the intro
         if (!DEBUG)
             System.out.println(intro);
-        Scanner cin = new Scanner(System.in); // declare the console input scanner
+        cin = new Scanner(System.in); // declare the console input scanner
         // main loop of get input, do command
         while (true) {
             System.out.print("sci." + module + " > "); // print the console prompt

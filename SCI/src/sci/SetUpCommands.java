@@ -83,5 +83,39 @@ public class SetUpCommands {
                 SCI.module = "core";
             }
         };
+        
+        // set up the basic module commands
+        // TODO: write the content for the modules
+        Command data = new Command("core", "data", "data", "Enters statistical data into the program.", null) {
+            protected void run() {
+                SCI.module = "data";
+                if (SCI.DEBUG) System.out.println(SCI.module);
+            }
+        };
+        
+        Command analyze = new Command("core", "analyze", "analyze", "Analyzes the statistical data input into the program.", null) {
+            protected void run() {
+                SCI.module = "analysis";
+                if (SCI.DEBUG) System.out.println(SCI.module);
+            }
+        };
+        
+        Command graph = new Command("core", "graph", "graph", "Graphs statistical data input into the program.", null) {
+            protected void run() {
+                SCI.module = "graphing";
+                if (SCI.DEBUG) System.out.println(SCI.module);
+            }
+        };
+        
+        Command addQuantitative = new Command("data", "add", "add <list_name>", "Prompts for quantitative data (each separated by a space) and enters it into list_name.",
+            new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
+               protected void run() {
+                   System.out.println("> ");
+                   String line = SCI.cin.nextLine();
+                   String[] strNums = line.split(" ");
+                   int[] nums = new int[strNums.length];
+                   // TODO: finish addQuantitative
+               }
+            };
     }
 }
