@@ -7,17 +7,21 @@ package sci;
 public class SetUpCommands {
     public static void main() {
         // put all creation of commands and help messages here
+        
+        // HelpMessages for the modules themselves: help_msg name, null usage, null flags
         HelpMessage core = new HelpMessage("core", "help_msg", null, "core: The main module, from which you can access the other modules.", null);
         SCI.addHelp(core);
         HelpMessage ober = new HelpMessage("ober", "help_msg", null, "ober: Commands in this module can be accessed from anywhere.", null);
         SCI.addHelp(ober);
         
+        // exit command definition; it's an obercommand
         Command exit = new Command("ober", "exit", "exit", "Quits the program.", null) {
             protected void run() {
                 System.exit(0);
             }
         };
         
+        // help command definition; it's an obercommand
         Command help = new Command("ober", "help", "help [<command>]", "Provides helpful information on commands.", 
                 "When no command is provided, the help message for the current module is printed.",
                 new String[][] {new String[] {"command", "Command/module to get help on; must be in the current module or an obercommand"}}) {
@@ -32,15 +36,24 @@ public class SetUpCommands {
             }        
             
             protected void run() {
+                // if there is more than 1 argument -> error
+                if (Command.getArgs().size() > 1) {
+                    SCI.error("Too many arguments: `help` takes maximum 1 argument");
+                    return;
+                }
+                // if there aren't arguments -> help for the current module
                 if (Command.getArgs().size() == 0) {
                     helpModule(SCI.module);
                     return;
-                } 
+                }
                 String command = Command.getArgs().get(0);
+                // if the argument is a module -> help for that module
                 if (SCI.help.keySet().contains(command)) {
                     helpModule(command);
                     return;
                 }
+                
+                // is it an obercommand? is it a command in the current module? otherwise, error
                 if (SCI.help.get("ober").containsKey(command)) {
                     System.out.println(SCI.help.get("ober").get(command));
                 } else if (SCI.help.get(SCI.module).containsKey(command)) {
@@ -51,15 +64,19 @@ public class SetUpCommands {
             }
         };
         
+        // pwm command definition; it's an obercommand
+        // Print Working Module
         Command pwm = new Command("ober", "pwm", "pwm", "Prints the current module.", null) {
             protected void run() {
                 System.out.println(SCI.module);
             }
         };
         
+        // back command definition; it's an obercommand
+        // changes from a module back to the core module
         Command back = new Command("ober", "back", "back", "Returns to the core module.", null) {
             protected void run() {
-                if (SCI.module.equals("core")) {
+                if (SCI.module.equals("core")) { // if you're already in the core module -> error
                     SCI.error("The current module is already core.");
                     return;
                 }
