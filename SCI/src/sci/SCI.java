@@ -10,7 +10,7 @@ import java.util.List;
  * @author Carson Foster
  */
 public class SCI {
-    protected static final boolean DEBUG = false; // will be set to true when debugging the program 
+    protected static final boolean DEBUG = true; // will be set to true when debugging the program 
     private static String intro = "Welcome to sci! sci is the Statistical Command Interface, and you can use it\n" // a simple intro message to print at beginning of execution
                                 + "to enter data, analyze the data (in a limited fashion), and graph the data.\n"
                                 + "Don't abuse it! :)";
@@ -24,8 +24,8 @@ public class SCI {
     protected static ArrayList<String> args = new ArrayList<>(); // represents the arguments passed to the command
     protected static HashMap<String, String> env = new HashMap<>(); // represents environment variables
     
-    protected static HashMap<String, List<QuantitativeDatum>> quantitative = new HashMap<>();
-    protected static HashMap<String, List<CategoricalUnit>> categorical = new HashMap<>();
+    protected static HashMap<String, StatList> quantitative = new HashMap<>();
+    protected static HashMap<String, StatList> categorical = new HashMap<>();
     
     protected static void addCommand(Command c) { // adds a command into the command hashmap
         if (!commands.containsKey(c.getModule())) { // module not in commands hashmap yet

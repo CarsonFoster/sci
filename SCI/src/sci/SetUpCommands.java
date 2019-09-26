@@ -1,5 +1,8 @@
 package sci;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Carson Foster
@@ -110,11 +113,52 @@ public class SetUpCommands {
         Command addQuantitative = new Command("data", "add", "add <list_name>", "Prompts for quantitative data (each separated by a space) and enters it into list_name.",
             new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
                protected void run() {
-                   System.out.println("> ");
+                   if (Command.getArgs().size() != 1) {
+                       SCI.error("`add` takes exactly one argument.");
+                       return;
+                   }
+                   System.out.print("> ");
                    String line = SCI.cin.nextLine();
                    String[] strNums = line.split(" ");
-                   int[] nums = new int[strNums.length];
-                   // TODO: finish addQuantitative
+                   StatList nums = new StatList();
+                   for (int i = 0; i < strNums.length; i++) {
+                       try {
+                           nums.add(new QuantitativeDatum(Double.parseDouble(strNums[i])));
+                       } catch (Exception e) {
+                           SCI.error("\"" + strNums[i] + "\" is not quantitative.");
+                           return;
+                       }
+                   }
+                   SCI.quantitative.put(Command.getArgs().get(0), nums);
+                   if (SCI.DEBUG) {
+                       StatList got = SCI.quantitative.get(Command.getArgs().get(0));
+                       for (Datum d : got)
+                           System.out.print((QuantitativeDatum)d + " ");
+                       System.out.println();
+                   }
+               }
+            };
+        Command addCategorical = new Command("data", "\\add", "\\add <list_name>", "Prompts for categorical data and enters it into list_name.", "Each categorical datum must be in the form (a b c .. n)",
+            new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
+               protected void run() {
+                   if (Command.getArgs().size() != 1) {
+                       SCI.error("`\\add` takes exactly one argument.");
+                       return;
+                   }
+                   System.out.print("> ");
+                   String line = SCI.cin.nextLine();
+                   String[] strings = line.split("\\)");
+                   StatList cat = new StatList();
+                   for (int i = 0; i < strings.length; i++) {
+                       cat.add(new CategoricalUnit(strings[i].substring(i > 0 ? 2 : 1).split(" ")));
+                   }
+                   SCI.categorical.put(Command.getArgs().get(0), cat);
+                   if (SCI.DEBUG) {
+                       StatList got = SCI.categorical.get(Command.getArgs().get(0));
+                       for (Datum d : got)
+                           System.out.print((CategoricalUnit)d + " ");
+                       System.out.println();
+                   }
                }
             };
     }

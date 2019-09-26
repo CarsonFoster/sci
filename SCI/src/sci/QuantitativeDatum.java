@@ -4,7 +4,7 @@ package sci;
  *
  * @author Carson Foster
  */
-public class QuantitativeDatum {
+public class QuantitativeDatum extends Datum {
     private double value;
     
     public QuantitativeDatum() {
@@ -21,5 +21,9 @@ public class QuantitativeDatum {
     
     public void setValue(double x) {
         value = x;
+    }
+    
+    public String toString() {
+        return Double.toString(value);
     }
 }
