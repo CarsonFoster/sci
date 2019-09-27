@@ -72,7 +72,7 @@ public class SCI {
             } else if (commands.get(module).containsKey(tokens[0])) { // otherwise it must be in the current module
                 commands.get(module).get(tokens[0]).run(); 
             } else
-                error(tokens[0] + " is not an accepted command."); // otherwise, it's an error
+                error("\"" + tokens[0] + "\" is not an accepted command."); // otherwise, it's an error
         }
     }
 }

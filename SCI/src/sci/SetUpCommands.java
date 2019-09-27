@@ -1,7 +1,10 @@
 package sci;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  *
@@ -110,56 +113,134 @@ public class SetUpCommands {
             }
         };
         
-        Command addQuantitative = new Command("data", "add", "add <list_name>", "Prompts for quantitative data (each separated by a space) and enters it into list_name.",
+        Command addQuantitative = new Command("data", "add", "add <list_name>", "Prompts for quantitative data (each separated by a space) and enters it into <list_name>.",
             new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
                protected void run() {
                    if (Command.getArgs().size() != 1) {
                        SCI.error("`add` takes exactly one argument.");
                        return;
                    }
+                   if (!StatList.checkListName(Command.getArgs().get(0))) {
+                       SCI.error("List name \"" + Command.getArgs().get(0) + "\" is already in use.");
+                       return;
+                   }
                    System.out.print("> ");
                    String line = SCI.cin.nextLine();
-                   String[] strNums = line.split(" ");
-                   StatList nums = new StatList();
-                   for (int i = 0; i < strNums.length; i++) {
-                       try {
-                           nums.add(new QuantitativeDatum(Double.parseDouble(strNums[i])));
-                       } catch (Exception e) {
-                           SCI.error("\"" + strNums[i] + "\" is not quantitative.");
-                           return;
-                       }
-                   }
+                   StatList nums = StatList.parseQuantitative(line);
+                   if (nums == null) return;
                    SCI.quantitative.put(Command.getArgs().get(0), nums);
                    if (SCI.DEBUG) {
                        StatList got = SCI.quantitative.get(Command.getArgs().get(0));
-                       for (Datum d : got)
-                           System.out.print((QuantitativeDatum)d + " ");
-                       System.out.println();
+                       System.out.println(got);
                    }
                }
             };
-        Command addCategorical = new Command("data", "\\add", "\\add <list_name>", "Prompts for categorical data and enters it into list_name.", "Each categorical datum must be in the form (a b c .. n)",
+        Command importQuantitative = new Command("data", "import", "import <path> <list_name>", "Opens the file at <path> and puts the quantitative data there into <list_name>.",
+            new String[][] {new String[] {"path", "Path to the file containing the quantitative data."}, new String[] {"list_name", "List to enter the data into."}}) {
+              protected void run() {
+                  if (Command.getArgs().size() != 2) {
+                      SCI.error("`import` takes exactly two arguments.");
+                      return;
+                  }
+                  
+                  if (!StatList.checkListName(Command.getArgs().get(1))) {
+                       SCI.error("List name \"" + Command.getArgs().get(1) + "\" is already in use.");
+                       return;
+                   }
+                  
+                  String path = Command.getArgs().get(0);
+                  Scanner fin;
+                  try {
+                    fin = new Scanner(new File(path));
+                  } catch(Exception e) {
+                      SCI.error("Could not open file at \"" + path + "\"");
+                      return;
+                  }
+                  String line = "";
+                  while (fin.hasNextLine()) {
+                      line += fin.nextLine().trim() + " ";
+                  }
+                  StatList data = StatList.parseQuantitative(line.substring(0, line.length() - 1));
+                  SCI.quantitative.put(Command.getArgs().get(1), data);
+                  if (SCI.DEBUG) {
+                       StatList got = SCI.quantitative.get(Command.getArgs().get(1));
+                       System.out.println(got);
+                   }
+              }  
+            };
+        
+        Command addCategorical = new Command("data", "\\add", "\\add <list_name>", "Prompts for categorical data and enters it into <list_name>.", "Each categorical datum must be in the form (a b c .. n)",
             new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
                protected void run() {
                    if (Command.getArgs().size() != 1) {
                        SCI.error("`\\add` takes exactly one argument.");
                        return;
                    }
+                   
+                   if (!StatList.checkListName(Command.getArgs().get(0))) {
+                       SCI.error("List name \"" + Command.getArgs().get(0) + "\" is already in use.");
+                       return;
+                   }
+                   
                    System.out.print("> ");
                    String line = SCI.cin.nextLine();
-                   String[] strings = line.split("\\)");
-                   StatList cat = new StatList();
-                   for (int i = 0; i < strings.length; i++) {
-                       cat.add(new CategoricalUnit(strings[i].substring(i > 0 ? 2 : 1).split(" ")));
-                   }
+                   StatList cat = StatList.parseCategorical(line);
                    SCI.categorical.put(Command.getArgs().get(0), cat);
                    if (SCI.DEBUG) {
                        StatList got = SCI.categorical.get(Command.getArgs().get(0));
-                       for (Datum d : got)
-                           System.out.print((CategoricalUnit)d + " ");
-                       System.out.println();
+                       System.out.println(got);
                    }
                }
             };
+        Command importCategorical = new Command("data", "\\import", "\\import <path> <list_name>", "Opens the file at <path> and puts the categorical data there into <list_name>.", "Each categorical datum must be in the form (a b c .. n)",
+            new String[][] {new String[] {"path", "Path to the file containing the categorical data."}, new String[] {"list_name", "List to enter the data into."}}) {
+              protected void run() {
+                  if (Command.getArgs().size() != 2) {
+                      SCI.error("`\\import` takes exactly two arguments.");
+                      return;
+                  }
+                  
+                  if (!StatList.checkListName(Command.getArgs().get(1))) {
+                       SCI.error("List name \"" + Command.getArgs().get(1) + "\" is already in use.");
+                       return;
+                   }
+                  
+                  String path = Command.getArgs().get(0);
+                  Scanner fin;
+                  try {
+                    fin = new Scanner(new File(path));
+                  } catch(Exception e) {
+                      SCI.error("Could not open file at \"" + path + "\"");
+                      return;
+                  }
+                  String line = "";
+                  while (fin.hasNextLine()) {
+                      line += fin.nextLine().trim() + " ";
+                  }
+                  StatList data = StatList.parseCategorical(line.substring(0, line.length() - 1));
+                  SCI.categorical.put(Command.getArgs().get(1), data);
+                  if (SCI.DEBUG) {
+                       StatList got = SCI.categorical.get(Command.getArgs().get(1));
+                       System.out.println(got);
+                   }
+              }  
+            };
+        Command view = new Command("data", "view", "view <list_name>", "Prints the contents of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to print the contents of."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`view` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    x = SCI.categorical.get(Command.getArgs().get(0));
+                }
+                if (x == null) {
+                    System.out.println("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                System.out.println(x);
+            }
+        };
     }
 }
