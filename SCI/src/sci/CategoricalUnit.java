@@ -23,13 +23,19 @@ public class CategoricalUnit extends Datum {
         values[index] = value;
     }
     
-    public double getQuantValue(int index) {
-        String value = values[index];
+    public Double getQuantValue(int index) {
+        String value;
+        try {
+            value = values[index];
+        } catch (Exception e) {
+            SCI.error("Index \"" + index + "\" is invalid.");
+            return null;
+        }
         try {
             return Double.parseDouble(value);
         } catch (Exception e) {
             SCI.error("\"" + value + "\" is not quantitative.");
-            return -1.0;
+            return null;
         }
     }
     
