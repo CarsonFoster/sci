@@ -1,5 +1,7 @@
 package sci;
 
+import java.math.BigDecimal;
+
 /**
  *
  * @author Carson Foster
@@ -23,7 +25,7 @@ public class CategoricalUnit extends Datum {
         values[index] = value;
     }
     
-    public Double getQuantValue(int index) {
+    public BigDecimal getQuantValue(int index) {
         String value;
         try {
             value = values[index];
@@ -32,7 +34,8 @@ public class CategoricalUnit extends Datum {
             return null;
         }
         try {
-            return Double.parseDouble(value);
+            Double.parseDouble(value);
+            return new BigDecimal(value);
         } catch (Exception e) {
             SCI.error("\"" + value + "\" is not quantitative.");
             return null;
@@ -47,5 +50,9 @@ public class CategoricalUnit extends Datum {
         }
         out += ")";
         return out;
+    }
+    
+    public int compareTo(Object o) {
+        return 0;
     }
 }

@@ -1,12 +1,25 @@
 package sci;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author fostecar000
  */
-public class StatList extends ArrayList<Datum> {
+public class StatList extends ArrayList<Datum> implements List<Datum>{
+    
+    public StatList() {
+        super();
+    }
+    
+    public StatList(StatList x) {
+        super();
+        for (Datum el : x) {
+            add(el);
+        }
+    }
+    
     public String toString() {
         String out = "";
         for (int i = 0; i < size(); i++) {
@@ -30,7 +43,8 @@ public class StatList extends ArrayList<Datum> {
         StatList nums = new StatList();
         for (int i = 0; i < strNums.length; i++) {
             try {
-                nums.add(new QuantitativeDatum(Double.parseDouble(strNums[i])));
+                Double.parseDouble(strNums[i]);
+                nums.add(new QuantitativeDatum(strNums[i]));
             } catch (Exception e) {
                 SCI.error("\"" + strNums[i] + "\" is not quantitative.");
                 return null;

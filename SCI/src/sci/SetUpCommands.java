@@ -2,7 +2,10 @@ package sci;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -260,6 +263,7 @@ class SetUpData {
 }
 
 class SetUpAnalysis {
+    protected static MathContext mc = new MathContext(5);
     public static void main() {
         Command xbar = new Command("analysis", "xbar", "xbar <list_name>", "Prints the sample mean of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the mean of."}}){
             protected void run() {
@@ -272,12 +276,11 @@ class SetUpAnalysis {
                     SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
                     return;
                 }
-                double sum = 0.0;
+                BigDecimal sum = BigDecimal.ZERO;
                 for (Datum datum : x) {
-                    sum += ((QuantitativeDatum)datum).getValue();
-                    //TODO: rounding after every operation
+                    sum = sum.add(((QuantitativeDatum)datum).getValue(), mc);
                 }
-                sum /= x.size();
+                sum = sum.divide(new BigDecimal(x.size()), mc);
                 System.out.println(sum);
             }
         };
@@ -300,14 +303,69 @@ class SetUpAnalysis {
                     SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
                     return;
                 }
-                double sum = 0.0;
+                BigDecimal sum = BigDecimal.ZERO;
                 for (Datum datum : x) {
-                    Double value = ((CategoricalUnit)datum).getQuantValue(index);
+                    BigDecimal value = ((CategoricalUnit)datum).getQuantValue(index);
                     if (value == null) return;
-                    sum += value;
+                    sum = sum.add(value, mc);
                 }
-                sum /= x.size();
+                sum = sum.divide(new BigDecimal(x.size()), mc);
                 System.out.println(sum);
+            }
+        };
+        Command xtilde = new Command("analysis", "xtilde", "xtilde <list_name>", "Prints the median of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the median of."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`xtilde` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                StatList xCopy = new StatList(x);
+                Collections.sort(xCopy);
+                BigDecimal median;
+                // [0 1 2 3 4 5] len/2-1 and len/2
+                if (xCopy.size() % 2 == 0)
+                    median = ((QuantitativeDatum)xCopy.get(xCopy.size() / 2 - 1)).getValue().add(((QuantitativeDatum)xCopy.get(xCopy.size() / 2)).getValue(), mc).divide(new BigDecimal(2), mc);
+                else
+                    median = ((QuantitativeDatum)xCopy.get(xCopy.size() / 2)).getValue();
+                System.out.println(median);
+            }
+        };
+        Command xtildeCategorical = new Command("analysis", "\\xtilde", "\\xtilde <list_name> <index>", "Prints the median of categorical list <list_name>'s <index>th elements.", "Indices start at 1.",
+                new String[][] {new String[] {"list_name", "The name of the list to take the median of."}, new String[] {"index", "The position of the quantitative data in the categorical unit list <list_name>."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\xtilde` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                Collections.sort(xCopy);
+                BigDecimal median;
+                // [0 1 2 3 4 5] len/2-1 and len/2
+                if (xCopy.size() % 2 == 0)
+                    median = ((QuantitativeDatum)xCopy.get(xCopy.size() / 2 - 1)).getValue().add(((QuantitativeDatum)xCopy.get(xCopy.size() / 2)).getValue(), mc).divide(new BigDecimal(2), mc);
+                else
+                    median = ((QuantitativeDatum)xCopy.get(xCopy.size() / 2)).getValue();
+                System.out.println(median);
             }
         };
     }

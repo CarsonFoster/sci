@@ -1,29 +1,41 @@
 package sci;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 /**
  *
  * @author Carson Foster
  */
 public class QuantitativeDatum extends Datum {
-    private double value;
+    private BigDecimal value;
     
     public QuantitativeDatum() {
-        value = 0.0;
+        value = new BigDecimal("0.0");
     }
     
-    public QuantitativeDatum(double x) {
+    public QuantitativeDatum(BigDecimal x) {
         value = x;
     }
     
-    public double getValue() {
+    public QuantitativeDatum(String x) {
+        value = new BigDecimal(x);
+    }
+    
+    public BigDecimal getValue() {
         return value;
     }
     
-    public void setValue(double x) {
-        value = x;
+    public void setValue(String x) {
+        value = new BigDecimal(x);
     }
     
     public String toString() {
-        return Double.toString(value);
+        return value.toString();
+    }
+    
+    public int compareTo(Object o) {
+        QuantitativeDatum x = (QuantitativeDatum)o;
+        return value.subtract(x.getValue()).signum();
     }
 }
