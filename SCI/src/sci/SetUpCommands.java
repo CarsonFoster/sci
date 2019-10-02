@@ -263,6 +263,29 @@ class SetUpData {
 }
 
 class SetUpAnalysis {
+    private static BigDecimal median(StatList x, int start, int end) {
+        StatList xCopy = new StatList(x);
+        Collections.sort(xCopy);
+        BigDecimal median;
+        // end - start + 1 = len; start + len/2 and start + len/2 - 1
+        // [0 1 2 3 4 5] len/2-1 and len/2
+        int length = end - start + 1;
+        if (xCopy.size() % 2 == 0)
+            median = ((QuantitativeDatum)xCopy.get(start + length / 2 - 1)).getValue().add(((QuantitativeDatum)xCopy.get(start + length / 2)).getValue(), mc).divide(new BigDecimal(2), mc);
+        else
+            median = ((QuantitativeDatum)xCopy.get(start + length / 2)).getValue();
+        return median;
+    }
+    
+    private static BigDecimal q1(StatList x) {
+        // change logic to just use indices
+        return median(x, 0, x.indexOf(median(x, 0, x.size() - 1)));
+    }
+    
+    private static BigDecimal q3(StatList x) {
+        return median(x, x.indexOf(median(x, 0, x.size() - 1)), x.size() - 1);
+    }
+    
     protected static MathContext mc = new MathContext(5);
     public static void main() {
         Command xbar = new Command("analysis", "xbar", "xbar <list_name>", "Prints the sample mean of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the mean of."}}){
@@ -324,22 +347,15 @@ class SetUpAnalysis {
                     SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
                     return;
                 }
-                StatList xCopy = new StatList(x);
-                Collections.sort(xCopy);
-                BigDecimal median;
-                // [0 1 2 3 4 5] len/2-1 and len/2
-                if (xCopy.size() % 2 == 0)
-                    median = ((QuantitativeDatum)xCopy.get(xCopy.size() / 2 - 1)).getValue().add(((QuantitativeDatum)xCopy.get(xCopy.size() / 2)).getValue(), mc).divide(new BigDecimal(2), mc);
-                else
-                    median = ((QuantitativeDatum)xCopy.get(xCopy.size() / 2)).getValue();
-                System.out.println(median);
+                
+                System.out.println(median(x, 0, x.size() - 1));
             }
         };
         Command xtildeCategorical = new Command("analysis", "\\xtilde", "\\xtilde <list_name> <index>", "Prints the median of categorical list <list_name>'s <index>th elements.", "Indices start at 1.",
                 new String[][] {new String[] {"list_name", "The name of the list to take the median of."}, new String[] {"index", "The position of the quantitative data in the categorical unit list <list_name>."}}) {
             protected void run() {
                 if (Command.getArgs().size() != 2) {
-                    SCI.error("`\\xtilde` takes exactly one argument.");
+                    SCI.error("`\\xtilde` takes exactly two arguments.");
                     return;
                 }
                 StatList x = SCI.categorical.get(Command.getArgs().get(0));
@@ -358,14 +374,48 @@ class SetUpAnalysis {
                 for (Datum el : x) {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
-                Collections.sort(xCopy);
-                BigDecimal median;
-                // [0 1 2 3 4 5] len/2-1 and len/2
-                if (xCopy.size() % 2 == 0)
-                    median = ((QuantitativeDatum)xCopy.get(xCopy.size() / 2 - 1)).getValue().add(((QuantitativeDatum)xCopy.get(xCopy.size() / 2)).getValue(), mc).divide(new BigDecimal(2), mc);
-                else
-                    median = ((QuantitativeDatum)xCopy.get(xCopy.size() / 2)).getValue();
-                System.out.println(median);
+                System.out.println(median(xCopy, 0, xCopy.size() - 1));
+            }
+        };
+        Command iqr = new Command("analysis", "iqr", "iqr <list_name>", "Prints the IQR of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the IQR of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`iqr` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                System.out.println(q3(x).subtract(q1(x), mc));
+            }
+        };
+        Command iqrCategorical = new Command("analysis", "\\iqr", "\\iqr <list_name> <index>", "Prints the IQR of categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to take the IQR of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\iqr` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                System.out.println(q3(xCopy).subtract(q1(xCopy), mc));
             }
         };
     }

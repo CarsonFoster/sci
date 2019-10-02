@@ -30,7 +30,7 @@ public class StatList extends ArrayList<Datum> implements List<Datum>{
     }
     
     protected static StatList parseCategorical(String line) {
-        String[] strings = line.split("\\)");
+        String[] strings = line.trim().split("\\)");
         StatList cat = new StatList();
         for (int i = 0; i < strings.length; i++) {
             cat.add(new CategoricalUnit(strings[i].substring(i > 0 ? 2 : 1).split(" ")));
