@@ -270,7 +270,7 @@ class SetUpAnalysis {
         // end - start + 1 = len; start + len/2 and start + len/2 - 1
         // [0 1 2 3 4 5] len/2-1 and len/2
         int length = end - start + 1;
-        if (xCopy.size() % 2 == 0)
+        if (length % 2 == 0)
             median = ((QuantitativeDatum)xCopy.get(start + length / 2 - 1)).getValue().add(((QuantitativeDatum)xCopy.get(start + length / 2)).getValue(), mc).divide(new BigDecimal(2), mc);
         else
             median = ((QuantitativeDatum)xCopy.get(start + length / 2)).getValue();
@@ -279,11 +279,13 @@ class SetUpAnalysis {
     
     private static BigDecimal q1(StatList x) {
         // change logic to just use indices
-        return median(x, 0, x.indexOf(median(x, 0, x.size() - 1)));
+        // 0 through len/2 - 1
+        return median(x, 0, x.size()/2 - 1);
     }
     
     private static BigDecimal q3(StatList x) {
-        return median(x, x.indexOf(median(x, 0, x.size() - 1)), x.size() - 1);
+        // len/2+1 through end
+        return median(x, x.size()/2 + 1, x.size() - 1);
     }
     
     protected static MathContext mc = new MathContext(5);
@@ -416,6 +418,188 @@ class SetUpAnalysis {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
                 System.out.println(q3(xCopy).subtract(q1(xCopy), mc));
+            }
+        };
+        Command q3 = new Command("analysis", "q3", "q3 <list_name>", "Prints the third quartile of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the third quartile of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`q3` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                System.out.println(q3(x));
+            }
+        };
+        Command q3Categorical = new Command("analysis", "\\q3", "\\q3 <list_name> <index>", "Prints the third quartile of categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to take the third quartile of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\q3` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                System.out.println(q3(xCopy));
+            }
+        };
+        Command q1 = new Command("analysis", "q1", "q1 <list_name>", "Prints the first quartile of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the first quartile of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`q1` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                System.out.println(q1(x));
+            }
+        };
+        Command q1Categorical = new Command("analysis", "\\q1", "\\q1 <list_name> <index>", "Prints the first quartile of categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to take the first quartile of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\q1` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                System.out.println(q1(xCopy));
+            }
+        };
+        Command min = new Command("analysis", "min", "min <list_name>", "Prints the minimum value in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the minimum of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`min` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                BigDecimal smallest = ((QuantitativeDatum)x.get(0)).getValue();
+                for (Datum el : x) {
+                    BigDecimal val = ((QuantitativeDatum)el).getValue();
+                    if (val.compareTo(smallest) < 0) smallest = val;
+                }
+                System.out.println(smallest);
+            }
+        };
+        Command minCategorical = new Command("analysis", "\\min", "\\min <list_name> <index>", "Prints the minimum of categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to take the minimum of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\min` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                BigDecimal smallest = ((QuantitativeDatum)xCopy.get(0)).getValue();
+                for (Datum el : xCopy) {
+                    BigDecimal val = ((QuantitativeDatum)el).getValue();
+                    if (val.compareTo(smallest) < 0) smallest = val;
+                }
+                System.out.println(smallest);
+            }
+        };
+        Command max = new Command("analysis", "max", "max <list_name>", "Prints the maximum value in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the maximum of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`max` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                BigDecimal smallest = ((QuantitativeDatum)x.get(0)).getValue();
+                for (Datum el : x) {
+                    BigDecimal val = ((QuantitativeDatum)el).getValue();
+                    if (val.compareTo(smallest) < 0) smallest = val;
+                }
+                System.out.println(smallest);
+            }
+        };
+        Command minCategorical = new Command("analysis", "\\min", "\\min <list_name> <index>", "Prints the minimum of categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to take the minimum of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\min` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                BigDecimal smallest = ((QuantitativeDatum)xCopy.get(0)).getValue();
+                for (Datum el : xCopy) {
+                    BigDecimal val = ((QuantitativeDatum)el).getValue();
+                    if (val.compareTo(smallest) < 0) smallest = val;
+                }
+                System.out.println(smallest);
             }
         };
     }
