@@ -1,6 +1,7 @@
 package sci;
 
 import java.math.BigDecimal;
+import static java.math.BigDecimal.ROUND_HALF_UP;
 import java.math.MathContext;
 
 /**
@@ -9,6 +10,21 @@ import java.math.MathContext;
  */
 public class QuantitativeDatum extends Datum {
     private BigDecimal value;
+    
+    // shamelessly stolen from StackOverflow: https://stackoverflow.com/questions/13649703/square-root-of-bigdecimal-in-java
+    public static BigDecimal sqrt(BigDecimal A, final int SCALE) {
+        BigDecimal x0 = BigDecimal.ZERO;
+        BigDecimal x1 = new BigDecimal(Math.sqrt(A.doubleValue()));
+        final BigDecimal TWO = new BigDecimal("2");
+        while (!x0.equals(x1)) {
+            x0 = x1;
+            x1 = A.divide(x0, SCALE, ROUND_HALF_UP);
+            x1 = x1.add(x0);
+            x1 = x1.divide(TWO, SCALE, ROUND_HALF_UP);
+
+        }
+        return x1;
+    }
     
     public QuantitativeDatum() {
         value = new BigDecimal("0.0");
