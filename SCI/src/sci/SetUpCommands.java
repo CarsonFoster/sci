@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -665,6 +666,181 @@ class SetUpAnalysis {
                 }
                 sum = sum.divide(new BigDecimal(x.size()), mc);
                 sum = QuantitativeDatum.sqrt(sum, mc.getPrecision());
+                System.out.println(sum);
+            }
+        };
+        Command n = new Command("analysis", "n", "n <list_name>", "Prints the number of elements in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to find the number of elements of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`n` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                System.out.println(x.size());
+            }
+        };
+        Command nCategorical = new Command("analysis", "\\n", "\\n <list_name> <index>", "Prints the number of elements in categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to find the number of elements of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\n` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                
+                System.out.println(xCopy.size());
+            }
+        };
+        Command mode = new Command("analysis", "mode", "mode <list_name>", "Prints the mode of elements in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to find the mode of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`mode` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                HashMap<QuantitativeDatum, Integer> count = new HashMap<>();
+                StatList xCopy = new StatList(x);
+                for (Datum el: xCopy) {
+                    QuantitativeDatum qd = (QuantitativeDatum)el;
+                    if (!count.containsKey(qd)) {
+                        count.put(qd, 1);
+                    } else {
+                        count.put(qd, count.get(qd) + 1);
+                    }
+                }
+                int max = 0;
+                for (QuantitativeDatum el : count.keySet()) {
+                    if (count.get(el) > max)
+                        max = count.get(el);
+                }
+                StatList modes = new StatList();
+                for (QuantitativeDatum el : count.keySet()) {
+                    if (count.get(el) == max) {
+                        modes.add(el);
+                    }
+                }
+                Collections.sort(modes);
+                System.out.println(modes);
+            }
+        };
+        Command modeCategorical = new Command("analysis", "\\mode", "\\mode <list_name> <index>", "Prints the mode of categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to find the mode of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\mode` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                HashMap<QuantitativeDatum, Integer> count = new HashMap<>();
+                for (Datum el: xCopy) {
+                    QuantitativeDatum qd = (QuantitativeDatum)el;
+                    if (!count.containsKey(qd)) {
+                        count.put(qd, 1);
+                    } else {
+                        count.put(qd, count.get(qd) + 1);
+                    }
+                }
+                int max = 0;
+                for (QuantitativeDatum el : count.keySet()) {
+                    if (count.get(el) > max)
+                        max = count.get(el);
+                }
+                StatList modes = new StatList();
+                for (QuantitativeDatum el : count.keySet()) {
+                    if (count.get(el) == max) {
+                        modes.add(el);
+                    }
+                }
+                Collections.sort(modes);
+                System.out.println(modes);
+            }
+        };
+        Command usigma = new Command("analysis", "usigma", "usigma <list_name>", "Prints the sum of elements in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to find the sum of elements of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`usigma` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                BigDecimal sum = BigDecimal.ZERO;
+                for (Datum el : x) {
+                    BigDecimal value = ((QuantitativeDatum)el).getValue();
+                    sum = sum.add(value, mc);
+                }
+                System.out.println(sum);
+            }
+        };
+        Command usigmaCategorical = new Command("analysis", "\\usigma", "\\usigma <list_name> <index>", "Prints the sum of elements in categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to find the sum of elements of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\usigma` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                
+                BigDecimal sum = BigDecimal.ZERO;
+                for (Datum el : xCopy) {
+                    BigDecimal value = ((QuantitativeDatum)el).getValue();
+                    sum = sum.add(value, mc);
+                }
                 System.out.println(sum);
             }
         };
