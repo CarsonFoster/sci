@@ -24,6 +24,11 @@ public class SetUpCommands {
         SCI.addHelp(core);
         HelpMessage ober = new HelpMessage("ober", "help_msg", null, "ober: Commands in this module can be accessed from anywhere.", null);
         SCI.addHelp(ober);
+        HelpMessage data_help = new HelpMessage("data", "help_msg", null, "data: Enter data into the program.", null);
+        SCI.addHelp(data_help);
+        HelpMessage analysis_help = new HelpMessage("analysis", "help_msg", null, "analysis: Analyze the entered data.", null);
+        SCI.addHelp(analysis_help);
+        HelpMessage graph_help = new HelpMessage("graph", "help_msg", null, "graph: Graph the data in various ways.", null);
         
         // exit command definition; it's an obercommand
         Command exit = new Command("ober", "exit", "exit", "Quits the program.", null) {
@@ -40,7 +45,10 @@ public class SetUpCommands {
             protected void helpModule(String module) {
                 System.out.println("Note: `help help` and `help ober` are useful too!");
                 System.out.println(SCI.help.get(module).get("help_msg"));
-                for (String key : SCI.help.get(module).keySet()) {
+                ArrayList<String> keys = new ArrayList<>();
+                keys.addAll(SCI.help.get(module).keySet());
+                Collections.sort(keys);
+                for (String key : keys) {
                     if (key.equals("help_msg")) continue;
                     System.out.println(key + "\t\t\t" + SCI.help.get(module).get(key).getDescription());
                 }
@@ -72,6 +80,7 @@ public class SetUpCommands {
                 } else {
                     SCI.error("Help for " + command + " not found.");
                 }
+                SCI.res = null;
             }
         };
         
@@ -80,6 +89,7 @@ public class SetUpCommands {
         Command pwm = new Command("ober", "pwm", "pwm", "Prints the current module.", null) {
             protected void run() {
                 System.out.println(SCI.module);
+                SCI.res = null;
             }
         };
         
@@ -92,6 +102,7 @@ public class SetUpCommands {
                     return;
                 }
                 SCI.module = "core";
+                SCI.res = null;
             }
         };
         
@@ -105,6 +116,7 @@ public class SetUpCommands {
                 }
                 SCI.module = "data";
                 if (SCI.DEBUG) System.out.println(SCI.module);
+                SCI.res = null;
             }
         };
         
@@ -116,6 +128,7 @@ public class SetUpCommands {
                 }
                 SCI.module = "analysis";
                 if (SCI.DEBUG) System.out.println(SCI.module);
+                SCI.res = null;
             }
         };
         
@@ -123,6 +136,7 @@ public class SetUpCommands {
             protected void run() {
                 SCI.module = "graphing";
                 if (SCI.DEBUG) System.out.println(SCI.module);
+                SCI.res = null;
             }
         };
     }
@@ -150,6 +164,7 @@ class SetUpData {
                            StatList got = SCI.quantitative.get(Command.getArgs().get(0));
                            System.out.println(got);
                        }
+                       SCI.res = null;
                    }
                 };
             Command importQuantitative = new Command("data", "import", "import <path> <list_name>", "Opens the file at <path> and puts the quantitative data there into <list_name>.",
@@ -184,6 +199,7 @@ class SetUpData {
                            StatList got = SCI.quantitative.get(Command.getArgs().get(1));
                            System.out.println(got);
                        }
+                      SCI.res = null;
                   }  
                 };
 
@@ -208,6 +224,7 @@ class SetUpData {
                            StatList got = SCI.categorical.get(Command.getArgs().get(0));
                            System.out.println(got);
                        }
+                       SCI.res = null;
                    }
                 };
             Command importCategorical = new Command("data", "\\import", "\\import <path> <list_name>", "Opens the file at <path> and puts the categorical data there into <list_name>.", "Each categorical datum must be in the form (a b c .. n)",
@@ -240,7 +257,8 @@ class SetUpData {
                       if (SCI.DEBUG) {
                            StatList got = SCI.categorical.get(Command.getArgs().get(1));
                            System.out.println(got);
-                       }
+                      }
+                      SCI.res = null;
                   }  
                 };
             Command view = new Command("data", "view", "view <list_name>", "Prints the contents of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to print the contents of."}}) {
@@ -258,6 +276,7 @@ class SetUpData {
                         return;
                     }
                     System.out.println(x);
+                    SCI.res = null;
                 }
             };
     }
@@ -300,7 +319,7 @@ class SetUpAnalysis {
     
     protected static MathContext mc = new MathContext(5);
     public static void main() {
-        Command xbar = new Command("analysis", "xbar", "xbar <list_name>", "Prints the sample mean of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the mean of."}}){
+        Command xbar = new Command("analysis", "xbar", "xbar <list_name>", "Prints the sample mean of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the mean of."}}){
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`xbar` takes exactly one argument.");
@@ -313,6 +332,7 @@ class SetUpAnalysis {
                 }
                 BigDecimal sum = mean(x);
                 System.out.println(sum);
+                SCI.res = new CommandResult(sum);
             }
         };
         Command xbarCategorical = new Command("analysis", "\\xbar", "\\xbar <list_name> <index>", "Prints the sample mean of categorical list <list_name>'s <index>th elements", 
@@ -340,6 +360,7 @@ class SetUpAnalysis {
                 }
                 BigDecimal sum = mean(xCopy);
                 System.out.println(sum);
+                SCI.res = new CommandResult(sum);
             }
         };
         Command xtilde = new Command("analysis", "xtilde", "xtilde <list_name>", "Prints the median of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the median of."}}) {
@@ -353,8 +374,9 @@ class SetUpAnalysis {
                     SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
                     return;
                 }
-                
-                System.out.println(median(x, 0, x.size() - 1));
+                BigDecimal med = median(x, 0, x.size() - 1);
+                System.out.println(med);
+                SCI.res = new CommandResult(med);
             }
         };
         Command xtildeCategorical = new Command("analysis", "\\xtilde", "\\xtilde <list_name> <index>", "Prints the median of categorical list <list_name>'s <index>th elements.", "Indices start at 1.",
@@ -380,10 +402,12 @@ class SetUpAnalysis {
                 for (Datum el : x) {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
-                System.out.println(median(xCopy, 0, xCopy.size() - 1));
+                BigDecimal med = median(xCopy, 0, xCopy.size() - 1);
+                System.out.println(med);
+                SCI.res = new CommandResult(med);
             }
         };
-        Command iqr = new Command("analysis", "iqr", "iqr <list_name>", "Prints the IQR of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the IQR of."}}) { 
+        Command iqr = new Command("analysis", "iqr", "iqr <list_name>", "Prints the IQR of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the IQR of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`iqr` takes exactly one argument.");
@@ -394,8 +418,9 @@ class SetUpAnalysis {
                     SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
                     return;
                 }
-                
-                System.out.println(q3(x).subtract(q1(x), mc));
+                BigDecimal iqr = q3(x).subtract(q1(x), mc);
+                System.out.println(iqr);
+                SCI.res = new CommandResult(iqr);
             }
         };
         Command iqrCategorical = new Command("analysis", "\\iqr", "\\iqr <list_name> <index>", "Prints the IQR of categorical list <list_name>'s <index>th elements.", 
@@ -424,7 +449,7 @@ class SetUpAnalysis {
                 System.out.println(q3(xCopy).subtract(q1(xCopy), mc));
             }
         };
-        Command q3 = new Command("analysis", "q3", "q3 <list_name>", "Prints the third quartile of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the third quartile of."}}) { 
+        Command q3 = new Command("analysis", "q3", "q3 <list_name>", "Prints the third quartile of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the third quartile of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`q3` takes exactly one argument.");
@@ -465,7 +490,7 @@ class SetUpAnalysis {
                 System.out.println(q3(xCopy));
             }
         };
-        Command q1 = new Command("analysis", "q1", "q1 <list_name>", "Prints the first quartile of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the first quartile of."}}) { 
+        Command q1 = new Command("analysis", "q1", "q1 <list_name>", "Prints the first quartile of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the first quartile of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`q1` takes exactly one argument.");
@@ -506,7 +531,7 @@ class SetUpAnalysis {
                 System.out.println(q1(xCopy));
             }
         };
-        Command min = new Command("analysis", "min", "min <list_name>", "Prints the minimum value in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the minimum of."}}) { 
+        Command min = new Command("analysis", "min", "min <list_name>", "Prints the minimum value in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the minimum of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`min` takes exactly one argument.");
@@ -556,7 +581,7 @@ class SetUpAnalysis {
                 System.out.println(smallest);
             }
         };
-        Command max = new Command("analysis", "max", "max <list_name>", "Prints the maximum value in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the maximum of."}}) { 
+        Command max = new Command("analysis", "max", "max <list_name>", "Prints the maximum value in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the maximum of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`max` takes exactly one argument.");
@@ -606,7 +631,7 @@ class SetUpAnalysis {
                 System.out.println(biggest);
             }
         };
-        Command lsigma = new Command("analysis", "lsigma", "lsigma <list_name>", "Prints the population standard deviation of <list_name>", new String[][] {new String[] {"list_name", "The name of the list to take the population standard deviation of."}}) { 
+        Command lsigma = new Command("analysis", "lsigma", "lsigma <list_name>", "Prints the population standard deviation of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the population standard deviation of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`lsigma` takes exactly one argument.");
@@ -669,7 +694,7 @@ class SetUpAnalysis {
                 System.out.println(sum);
             }
         };
-        Command n = new Command("analysis", "n", "n <list_name>", "Prints the number of elements in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to find the number of elements of."}}) { 
+        Command n = new Command("analysis", "n", "n <list_name>", "Prints the number of elements in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to find the number of elements of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`n` takes exactly one argument.");
@@ -710,7 +735,7 @@ class SetUpAnalysis {
                 System.out.println(xCopy.size());
             }
         };
-        Command mode = new Command("analysis", "mode", "mode <list_name>", "Prints the mode of elements in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to find the mode of."}}) { 
+        Command mode = new Command("analysis", "mode", "mode <list_name>", "Prints the mode of elements in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to find the mode of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`mode` takes exactly one argument.");
@@ -793,7 +818,7 @@ class SetUpAnalysis {
                 System.out.println(modes);
             }
         };
-        Command usigma = new Command("analysis", "usigma", "usigma <list_name>", "Prints the sum of elements in <list_name>", new String[][] {new String[] {"list_name", "The name of the list to find the sum of elements of."}}) { 
+        Command usigma = new Command("analysis", "usigma", "usigma <list_name>", "Prints the sum of elements in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to find the sum of elements of."}}) { 
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`usigma` takes exactly one argument.");

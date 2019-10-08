@@ -27,6 +27,8 @@ public class SCI {
     protected static HashMap<String, StatList> quantitative = new HashMap<>();
     protected static HashMap<String, StatList> categorical = new HashMap<>();
     
+    protected static CommandResult res = null;
+    
     protected static void addCommand(Command c) { // adds a command into the command hashmap
         if (!commands.containsKey(c.getModule())) { // module not in commands hashmap yet
             commands.put(c.getModule(), new HashMap<String, Command>()); // create empty hashmap for the module
