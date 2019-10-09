@@ -28,6 +28,7 @@ public class SCI {
     protected static HashMap<String, StatList> categorical = new HashMap<>();
     
     protected static CommandResult res = null;
+    protected static boolean console = true;
     
     protected static void addCommand(Command c) { // adds a command into the command hashmap
         if (!commands.containsKey(c.getModule())) { // module not in commands hashmap yet
@@ -44,8 +45,9 @@ public class SCI {
     }
     
     // puts the tokens into the args arraylist so that the commands can access them
-    private static void putArgs(String[] tokens) {
+    protected static void putArgs(String[] tokens) {
         args.clear(); // make sure it's empty first
+        if (tokens == null) return;
         for (int i = 1; i < tokens.length; i++) { // skip the command name
             args.add(tokens[i]);
         }
@@ -54,6 +56,7 @@ public class SCI {
     // custom error message
     protected static void error(String msg) {
         System.err.println("sci." + module + ": Error: " + msg); // Ex: sci.core: Error: message
+        res = null;
     }
     
     public static void main(String[] args) {

@@ -106,6 +106,30 @@ public class SetUpCommands {
             }
         };
         
+        Command suppress = new Command("ober", "suppress", "suppress <command> [<args>]", "Suppresses the output of <command>, called with <args>.", 
+            new String[][] {new String[] {"command", "The command to call."}, new String[] {"args", "The arguments to pass to <command>."}}) {
+            
+            protected void run() {
+                if (SCI.args.size() < 1) {
+                    SCI.error("`suppress` takes at minimum one argument.");
+                }
+                
+                String[] args = null;
+                System.out.println(SCI.args);
+                String cmd = SCI.args.get(0);
+                SCI.putArgs(args);
+                SCI.console = false;
+                if (SCI.commands.get("ober").containsKey(cmd)) { // if it's an ober command
+                    SCI.commands.get("ober").get(cmd).run();
+                } else if (SCI.commands.get(SCI.module).containsKey(cmd)) { // otherwise it must be in the current module
+                    SCI.commands.get(SCI.module).get(cmd).run(); 
+                } else
+                    SCI.error("\"" + cmd + "\" is not an accepted command."); // otherwise, it's an error
+                SCI.console = true;
+            }
+                
+        };
+        
         // set up the basic module commands
         // TODO: write the content for the modules
         Command data = new Command("core", "data", "data", "Enters statistical data into the program.", null) {
@@ -331,7 +355,8 @@ class SetUpAnalysis {
                     return;
                 }
                 BigDecimal sum = mean(x);
-                System.out.println(sum);
+                if (SCI.console)
+                    System.out.println(sum);
                 SCI.res = new CommandResult(sum);
             }
         };
@@ -359,7 +384,8 @@ class SetUpAnalysis {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
                 BigDecimal sum = mean(xCopy);
-                System.out.println(sum);
+                if (SCI.console)
+                    System.out.println(sum);
                 SCI.res = new CommandResult(sum);
             }
         };
@@ -375,7 +401,8 @@ class SetUpAnalysis {
                     return;
                 }
                 BigDecimal med = median(x, 0, x.size() - 1);
-                System.out.println(med);
+                if (SCI.console)
+                    System.out.println(med);
                 SCI.res = new CommandResult(med);
             }
         };
@@ -403,7 +430,8 @@ class SetUpAnalysis {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
                 BigDecimal med = median(xCopy, 0, xCopy.size() - 1);
-                System.out.println(med);
+                if (SCI.console)
+                    System.out.println(med);
                 SCI.res = new CommandResult(med);
             }
         };
@@ -419,7 +447,8 @@ class SetUpAnalysis {
                     return;
                 }
                 BigDecimal iqr = q3(x).subtract(q1(x), mc);
-                System.out.println(iqr);
+                if (SCI.console)
+                    System.out.println(iqr);
                 SCI.res = new CommandResult(iqr);
             }
         };
@@ -446,7 +475,10 @@ class SetUpAnalysis {
                 for (Datum el : x) {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
-                System.out.println(q3(xCopy).subtract(q1(xCopy), mc));
+                BigDecimal iqr = q3(xCopy).subtract(q1(xCopy), mc);
+                if (SCI.console)
+                    System.out.println(iqr);
+                SCI.res = new CommandResult(iqr);
             }
         };
         Command q3 = new Command("analysis", "q3", "q3 <list_name>", "Prints the third quartile of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the third quartile of."}}) { 
@@ -460,8 +492,10 @@ class SetUpAnalysis {
                     SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
                     return;
                 }
-                
-                System.out.println(q3(x));
+                BigDecimal q3 = q3(x);
+                if (SCI.console)
+                    System.out.println(q3);
+                SCI.res = new CommandResult(q3);
             }
         };
         Command q3Categorical = new Command("analysis", "\\q3", "\\q3 <list_name> <index>", "Prints the third quartile of categorical list <list_name>'s <index>th elements.", 
@@ -487,7 +521,10 @@ class SetUpAnalysis {
                 for (Datum el : x) {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
-                System.out.println(q3(xCopy));
+                BigDecimal q3 = q3(xCopy);
+                if (SCI.console)
+                    System.out.println(q3);
+                SCI.res = new CommandResult(q3);
             }
         };
         Command q1 = new Command("analysis", "q1", "q1 <list_name>", "Prints the first quartile of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the first quartile of."}}) { 
@@ -502,7 +539,10 @@ class SetUpAnalysis {
                     return;
                 }
                 
-                System.out.println(q1(x));
+                BigDecimal q1 = q1(x);
+                if (SCI.console)
+                    System.out.println(q1);
+                SCI.res = new CommandResult(q1);
             }
         };
         Command q1Categorical = new Command("analysis", "\\q1", "\\q1 <list_name> <index>", "Prints the first quartile of categorical list <list_name>'s <index>th elements.", 
@@ -528,7 +568,10 @@ class SetUpAnalysis {
                 for (Datum el : x) {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
-                System.out.println(q1(xCopy));
+                BigDecimal q1 = q1(xCopy);
+                if (SCI.console)
+                    System.out.println(q1);
+                SCI.res = new CommandResult(q1);
             }
         };
         Command min = new Command("analysis", "min", "min <list_name>", "Prints the minimum value in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the minimum of."}}) { 
@@ -547,7 +590,9 @@ class SetUpAnalysis {
                     BigDecimal val = ((QuantitativeDatum)el).getValue();
                     if (val.compareTo(smallest) < 0) smallest = val;
                 }
-                System.out.println(smallest);
+                if (SCI.console)
+                    System.out.println(smallest);
+                SCI.res = new CommandResult(smallest);
             }
         };
         Command minCategorical = new Command("analysis", "\\min", "\\min <list_name> <index>", "Prints the minimum of categorical list <list_name>'s <index>th elements.", 
@@ -578,7 +623,9 @@ class SetUpAnalysis {
                     BigDecimal val = ((QuantitativeDatum)el).getValue();
                     if (val.compareTo(smallest) < 0) smallest = val;
                 }
-                System.out.println(smallest);
+                if (SCI.console)
+                    System.out.println(smallest);
+                SCI.res = new CommandResult(smallest);
             }
         };
         Command max = new Command("analysis", "max", "max <list_name>", "Prints the maximum value in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the maximum of."}}) { 
@@ -597,7 +644,9 @@ class SetUpAnalysis {
                     BigDecimal val = ((QuantitativeDatum)el).getValue();
                     if (val.compareTo(smallest) < 0) smallest = val;
                 }
-                System.out.println(smallest);
+                if (SCI.console)
+                    System.out.println(smallest);
+                SCI.res = new CommandResult(smallest);
             }
         };
         Command maxCategorical = new Command("analysis", "\\max", "\\max <list_name> <index>", "Prints the maximum of categorical list <list_name>'s <index>th elements.", 
@@ -628,7 +677,9 @@ class SetUpAnalysis {
                     BigDecimal val = ((QuantitativeDatum)el).getValue();
                     if (val.compareTo(biggest) > 0) biggest = val;
                 }
-                System.out.println(biggest);
+                if (SCI.console)
+                    System.out.println(biggest);
+                SCI.res = new CommandResult(biggest);
             }
         };
         Command lsigma = new Command("analysis", "lsigma", "lsigma <list_name>", "Prints the population standard deviation of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the population standard deviation of."}}) { 
@@ -653,7 +704,9 @@ class SetUpAnalysis {
                 }
                 sum = sum.divide(new BigDecimal(x.size()), mc);
                 sum = QuantitativeDatum.sqrt(sum, mc.getPrecision());
-                System.out.println(sum);
+                if (SCI.console)
+                    System.out.println(sum);
+                SCI.res = new CommandResult(sum);
             }
         };
         Command lsigmaCategorical = new Command("analysis", "\\lsigma", "\\lsigma <list_name> <index>", "Prints the population standard deviation of categorical list <list_name>'s <index>th elements.", 
@@ -691,7 +744,9 @@ class SetUpAnalysis {
                 }
                 sum = sum.divide(new BigDecimal(x.size()), mc);
                 sum = QuantitativeDatum.sqrt(sum, mc.getPrecision());
-                System.out.println(sum);
+                if (SCI.console)
+                    System.out.println(sum);
+                SCI.res = new CommandResult(sum);
             }
         };
         Command n = new Command("analysis", "n", "n <list_name>", "Prints the number of elements in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to find the number of elements of."}}) { 
@@ -705,7 +760,12 @@ class SetUpAnalysis {
                     SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
                     return;
                 }
-                System.out.println(x.size());
+                int s = x.size();
+                BigDecimal size = new BigDecimal(s);
+                if (SCI.console)
+                    System.out.println(s);
+                SCI.res = new CommandResult(size);
+                
             }
         };
         Command nCategorical = new Command("analysis", "\\n", "\\n <list_name> <index>", "Prints the number of elements in categorical list <list_name>'s <index>th elements.", 
@@ -731,8 +791,10 @@ class SetUpAnalysis {
                 for (Datum el : x) {
                     xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
                 }
-                
-                System.out.println(xCopy.size());
+                int s = xCopy.size();
+                if (SCI.console)
+                    System.out.println(s);
+                SCI.res = new CommandResult(new BigDecimal(s));
             }
         };
         Command mode = new Command("analysis", "mode", "mode <list_name>", "Prints the mode of elements in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to find the mode of."}}) { 
@@ -768,7 +830,9 @@ class SetUpAnalysis {
                     }
                 }
                 Collections.sort(modes);
-                System.out.println(modes);
+                if (SCI.console)
+                    System.out.println(modes);
+                SCI.res = new CommandResult(modes);
             }
         };
         Command modeCategorical = new Command("analysis", "\\mode", "\\mode <list_name> <index>", "Prints the mode of categorical list <list_name>'s <index>th elements.", 
@@ -815,7 +879,9 @@ class SetUpAnalysis {
                     }
                 }
                 Collections.sort(modes);
-                System.out.println(modes);
+                if (SCI.console)
+                    System.out.println(modes);
+                SCI.res = new CommandResult(modes);
             }
         };
         Command usigma = new Command("analysis", "usigma", "usigma <list_name>", "Prints the sum of elements in <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to find the sum of elements of."}}) { 
@@ -834,7 +900,9 @@ class SetUpAnalysis {
                     BigDecimal value = ((QuantitativeDatum)el).getValue();
                     sum = sum.add(value, mc);
                 }
-                System.out.println(sum);
+                if (SCI.console)
+                    System.out.println(sum);
+                SCI.res = new CommandResult(sum);
             }
         };
         Command usigmaCategorical = new Command("analysis", "\\usigma", "\\usigma <list_name> <index>", "Prints the sum of elements in categorical list <list_name>'s <index>th elements.", 
@@ -866,7 +934,9 @@ class SetUpAnalysis {
                     BigDecimal value = ((QuantitativeDatum)el).getValue();
                     sum = sum.add(value, mc);
                 }
-                System.out.println(sum);
+                if (SCI.console)
+                    System.out.println(sum);
+                SCI.res = new CommandResult(sum);
             }
         };
     }
