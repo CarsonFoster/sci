@@ -114,8 +114,8 @@ public class SetUpCommands {
                     SCI.error("`suppress` takes at minimum one argument.");
                 }
                 
-                String[] args = null;
-                System.out.println(SCI.args);
+                String[] args = new String[]{};
+                args = SCI.args.toArray(args);
                 String cmd = SCI.args.get(0);
                 SCI.putArgs(args);
                 SCI.console = false;
@@ -128,6 +128,31 @@ public class SetUpCommands {
                 SCI.console = true;
             }
                 
+        };
+        
+        Command pop = new Command("ober", "pop", "pop", "Prints the return value of the last command and removes it from memory.", null) {
+            protected void run() {
+                System.out.println(SCI.res);
+                SCI.res = null;
+            }
+        };
+        
+        Command set = new Command("ober", "set", "set <variable> <value>", "Sets the environment variable <variable> to the value <value>.", "<variable> must be of the form $name, where name can only contains letters, numbers, and underscores.",
+            new String[][] {new String[] {"variable", "Name of the variable to set to <value>."}, new String[] {"value", "Value to set <variable> equal to."}}) {
+                protected void run() {
+                    if (SCI.args.size() < 2) {
+                        SCI.error("`set` takes exactly two arguments.");
+                        return;
+                    }
+                    String var = SCI.args.get(0);
+                    String value = SCI.args.get(1);
+                    if (!SCI.checkVariable(var)) {
+                        SCI.error("\"" + var + "\" is not a valid variable name.");
+                        return;
+                    }
+                    SCI.env.put(var, value);
+                    SCI.res = null;
+                }
         };
         
         // set up the basic module commands

@@ -33,4 +33,9 @@ public class CommandResult {
     public StatList getList() {
         return list;
     }
+    
+    public String toString() {
+        if (isValue) return value.toString();
+        return list.toString();
+    }
 }

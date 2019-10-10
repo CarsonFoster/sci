@@ -30,6 +30,10 @@ public class SCI {
     protected static CommandResult res = null;
     protected static boolean console = true;
     
+    protected static boolean checkVariable(String var) {
+        return var.matches("\\$[a-zA-Z0-9_]+");
+    }
+    
     protected static void addCommand(Command c) { // adds a command into the command hashmap
         if (!commands.containsKey(c.getModule())) { // module not in commands hashmap yet
             commands.put(c.getModule(), new HashMap<String, Command>()); // create empty hashmap for the module
@@ -75,7 +79,13 @@ public class SCI {
             if (commands.get("ober").containsKey(tokens[0])) { // if it's an ober command
                 commands.get("ober").get(tokens[0]).run();
             } else if (commands.get(module).containsKey(tokens[0])) { // otherwise it must be in the current module
-                commands.get(module).get(tokens[0]).run(); 
+                commands.get(module).get(tokens[0]).run();
+            } else if (line.startsWith("$")) {
+                if (!checkVariable(line)) {
+                    error("\"" + line + "\" is not a valid variable name.");
+                    continue;
+                }
+                System.out.println(env.get(line));
             } else
                 error("\"" + tokens[0] + "\" is not an accepted command."); // otherwise, it's an error
         }
