@@ -29,6 +29,7 @@ public class SetUpCommands {
         HelpMessage analysis_help = new HelpMessage("analysis", "help_msg", null, "analysis: Analyze the entered data.", null);
         SCI.addHelp(analysis_help);
         HelpMessage graph_help = new HelpMessage("graph", "help_msg", null, "graph: Graph the data in various ways.", null);
+        SCI.addHelp(graph_help);
         
         // exit command definition; it's an obercommand
         Command exit = new Command("ober", "exit", "exit", "Quits the program.", null) {
@@ -962,6 +963,49 @@ class SetUpAnalysis {
                 if (SCI.console)
                     System.out.println(sum);
                 SCI.res = new CommandResult(sum);
+            }
+        };
+        
+        Command fivenum = new Command("analysis", "fivenum", "fivenum <list_name>", "Prints the five number summary of the list <list_name>", new String[][] {new String[] {"list_name", "The list to take the five number summary of."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`fivenum` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                String list = Command.getArgs().get(0);
+                SCI.putArgs(("suppress min " + list).split(" "));
+                SCI.commands.get("ober").get("suppress").run();
+                BigDecimal min = SCI.res.getValue();
+                
+                SCI.putArgs(("suppress max " + list).split(" "));
+                SCI.commands.get("ober").get("suppress").run();
+                BigDecimal max = SCI.res.getValue();
+
+                SCI.putArgs(("suppress xtilde " + list).split(" "));
+                SCI.commands.get("ober").get("suppress").run();
+                BigDecimal median = SCI.res.getValue();
+                
+                SCI.putArgs(("suppress q1 " + list).split(" "));
+                SCI.commands.get("ober").get("suppress").run();
+                BigDecimal q1 = SCI.res.getValue();
+                
+                SCI.putArgs(("suppress q3 " + list).split(" "));
+                SCI.commands.get("ober").get("suppress").run();
+                BigDecimal q3 = SCI.res.getValue();
+                if (SCI.console)
+                    System.out.printf("min: %s q1: %s xtilde: %s q3: %s max: %s", min.toString(), q1.toString(), median.toString(), q3.toString(), max.toString());
+                StatList result = new StatList();
+                result.add(new QuantitativeDatum(min));
+                result.add(new QuantitativeDatum(q1));
+                result.add(new QuantitativeDatum(median));
+                result.add(new QuantitativeDatum(q3));
+                result.add(new QuantitativeDatum(max));
+                SCI.res = new CommandResult(result);
             }
         };
     }
