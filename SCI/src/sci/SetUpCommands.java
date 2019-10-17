@@ -665,14 +665,14 @@ class SetUpAnalysis {
                     SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
                     return;
                 }
-                BigDecimal smallest = ((QuantitativeDatum)x.get(0)).getValue();
+                BigDecimal biggest = ((QuantitativeDatum)x.get(0)).getValue();
                 for (Datum el : x) {
                     BigDecimal val = ((QuantitativeDatum)el).getValue();
-                    if (val.compareTo(smallest) < 0) smallest = val;
+                    if (val.compareTo(biggest) > 0) biggest = val;
                 }
                 if (SCI.console)
-                    System.out.println(smallest);
-                SCI.res = new CommandResult(smallest);
+                    System.out.println(biggest);
+                SCI.res = new CommandResult(biggest);
             }
         };
         Command maxCategorical = new Command("analysis", "\\max", "\\max <list_name> <index>", "Prints the maximum of categorical list <list_name>'s <index>th elements.", 
@@ -978,27 +978,30 @@ class SetUpAnalysis {
                     return;
                 }
                 String list = Command.getArgs().get(0);
-                SCI.putArgs(("suppress min " + list).split(" "));
-                SCI.commands.get("ober").get("suppress").run();
+                boolean console = SCI.console;
+                SCI.console = false;
+                SCI.putArgs(("min " + list).split(" "));
+                SCI.commands.get("analysis").get("min").run();
                 BigDecimal min = SCI.res.getValue();
                 
-                SCI.putArgs(("suppress max " + list).split(" "));
-                SCI.commands.get("ober").get("suppress").run();
+                SCI.putArgs(("max " + list).split(" "));
+                SCI.commands.get("analysis").get("max").run();
                 BigDecimal max = SCI.res.getValue();
 
-                SCI.putArgs(("suppress xtilde " + list).split(" "));
-                SCI.commands.get("ober").get("suppress").run();
+                SCI.putArgs(("xtilde " + list).split(" "));
+                SCI.commands.get("analysis").get("xtilde").run();
                 BigDecimal median = SCI.res.getValue();
                 
-                SCI.putArgs(("suppress q1 " + list).split(" "));
-                SCI.commands.get("ober").get("suppress").run();
+                SCI.putArgs(("q1 " + list).split(" "));
+                SCI.commands.get("analysis").get("q1").run();
                 BigDecimal q1 = SCI.res.getValue();
                 
-                SCI.putArgs(("suppress q3 " + list).split(" "));
-                SCI.commands.get("ober").get("suppress").run();
+                SCI.putArgs(("q3 " + list).split(" "));
+                SCI.commands.get("analysis").get("q3").run();
                 BigDecimal q3 = SCI.res.getValue();
+                SCI.console = console;
                 if (SCI.console)
-                    System.out.printf("min: %s q1: %s xtilde: %s q3: %s max: %s", min.toString(), q1.toString(), median.toString(), q3.toString(), max.toString());
+                    System.out.printf("min: %s q1: %s xtilde: %s q3: %s max: %s%n", min.toString(), q1.toString(), median.toString(), q3.toString(), max.toString());
                 StatList result = new StatList();
                 result.add(new QuantitativeDatum(min));
                 result.add(new QuantitativeDatum(q1));
@@ -1006,6 +1009,22 @@ class SetUpAnalysis {
                 result.add(new QuantitativeDatum(q3));
                 result.add(new QuantitativeDatum(max));
                 SCI.res = new CommandResult(result);
+            }
+        };
+        Command dist = new Command("analysis", "dist", "dist <list_name>", "Prints the appropriate center and spread for the list <list_name>", new String[][] {new String[] {"list_name", "The list to take the center and spread of."}}){
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`dist` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                BigDecimal mean = mean(x);
+                BigDecimal median = median(x, 0, x.size() - 1);
+                BigDecimal diff = mean.subtract(median, mc);
             }
         };
     }
