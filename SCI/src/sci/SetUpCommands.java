@@ -333,6 +333,7 @@ class SetUpData {
 }
 
 class SetUpAnalysis {
+    private static BigDecimal tolerance = new BigDecimal(0.1);
     private static BigDecimal median(StatList x, int start, int end) {
         StatList xCopy = new StatList(x);
         Collections.sort(xCopy);
@@ -965,8 +966,75 @@ class SetUpAnalysis {
                 SCI.res = new CommandResult(sum);
             }
         };
+        Command s = new Command("analysis", "s", "s <list_name>", "Prints the sample standard deviation of <list_name>.", new String[][] {new String[] {"list_name", "The name of the list to take the sample standard deviation of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`s` takes exactly one argument.");
+                    return;
+                }
+                StatList x = SCI.quantitative.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                BigDecimal mean = mean(x);
+                BigDecimal sum = BigDecimal.ZERO;
+                // sqrt(sum of (y-bar - y)^2 / n - 1)
+                for (Datum el : x) {
+                    BigDecimal val = ((QuantitativeDatum)el).getValue();
+                    BigDecimal diff = mean.subtract(val, mc);
+                    diff = diff.multiply(diff, mc);
+                    sum = sum.add(diff, mc);
+                }
+                sum = sum.divide(new BigDecimal(x.size()).subtract(BigDecimal.ONE, mc), mc);
+                sum = QuantitativeDatum.sqrt(sum, mc.getPrecision());
+                if (SCI.console)
+                    System.out.println(sum);
+                SCI.res = new CommandResult(sum);
+            }
+        };
+        Command sCategorical = new Command("analysis", "\\s", "\\s <list_name> <index>", "Prints the sample standard deviation of categorical list <list_name>'s <index>th elements.", 
+                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to take the sample standard deviation of."}}) { 
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\s` takes exactly two arguments.");
+                    return;
+                }
+                StatList x = SCI.categorical.get(Command.getArgs().get(0));
+                if (x == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList xCopy = new StatList();
+                for (Datum el : x) {
+                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                
+                BigDecimal mean = mean(xCopy);
+                BigDecimal sum = BigDecimal.ZERO;
+                // sqrt(sum of (y-bar - y)^2 / n - 1)
+                for (Datum el : xCopy) {
+                    BigDecimal val = ((QuantitativeDatum)el).getValue();
+                    BigDecimal diff = mean.subtract(val, mc);
+                    diff = diff.multiply(diff, mc);
+                    sum = sum.add(diff, mc);
+                }
+                sum = sum.divide(new BigDecimal(x.size()).subtract(BigDecimal.ONE, mc), mc);
+                sum = QuantitativeDatum.sqrt(sum, mc.getPrecision());
+                if (SCI.console)
+                    System.out.println(sum);
+                SCI.res = new CommandResult(sum);
+            }
+        };
         
-        Command fivenum = new Command("analysis", "fivenum", "fivenum <list_name>", "Prints the five number summary of the list <list_name>", new String[][] {new String[] {"list_name", "The list to take the five number summary of."}}) {
+        Command fivenum = new Command("analysis", "fivenum", "fivenum <list_name> <index>", "Prints the five number summary of the <index>th elements of categorical list <list_name>", new String[][] {new String[] {"list_name", "The list to take the five number summary of."}}) {
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`fivenum` takes exactly one argument.");
@@ -1011,6 +1079,65 @@ class SetUpAnalysis {
                 SCI.res = new CommandResult(result);
             }
         };
+        Command fivenumCategorical = new Command("analysis", "\\fivenum", "\\fivenum <list_name>", "Prints the five number summary of the list <list_name>", new String[][] {new String[] {"list_name", "The list to take the five number summary of."}, new String[] {"index", "The index of the categorical list describing the data set to take the center and spread of."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\fivenum` takes exactly two arguments.");
+                    return;
+                }
+                StatList y = SCI.categorical.get(Command.getArgs().get(0));
+                if (y == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList x = new StatList();
+                for (Datum el : y) {
+                    x.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                
+                String list = Command.getArgs().get(0);
+                String i = Integer.toString(index);
+                boolean console = SCI.console;
+                SCI.console = false;
+                SCI.putArgs(("\\min " + list + " " + i).split(" "));
+                SCI.commands.get("analysis").get("min").run();
+                BigDecimal min = SCI.res.getValue();
+                
+                SCI.putArgs(("\\max " + list + " " + i).split(" "));
+                SCI.commands.get("analysis").get("max").run();
+                BigDecimal max = SCI.res.getValue();
+
+                SCI.putArgs(("\\xtilde " + list + " " + i).split(" "));
+                SCI.commands.get("analysis").get("xtilde").run();
+                BigDecimal median = SCI.res.getValue();
+                
+                SCI.putArgs(("\\q1 " + list + " " + i).split(" "));
+                SCI.commands.get("analysis").get("q1").run();
+                BigDecimal q1 = SCI.res.getValue();
+                
+                SCI.putArgs(("\\q3 " + list + " " + i).split(" "));
+                SCI.commands.get("analysis").get("q3").run();
+                BigDecimal q3 = SCI.res.getValue();
+                SCI.console = console;
+                if (SCI.console)
+                    System.out.printf("min: %s q1: %s xtilde: %s q3: %s max: %s%n", min.toString(), q1.toString(), median.toString(), q3.toString(), max.toString());
+                StatList result = new StatList();
+                result.add(new QuantitativeDatum(min));
+                result.add(new QuantitativeDatum(q1));
+                result.add(new QuantitativeDatum(median));
+                result.add(new QuantitativeDatum(q3));
+                result.add(new QuantitativeDatum(max));
+                SCI.res = new CommandResult(result);
+            }
+        };
         Command dist = new Command("analysis", "dist", "dist <list_name>", "Prints the appropriate center and spread for the list <list_name>", new String[][] {new String[] {"list_name", "The list to take the center and spread of."}}){
             protected void run() {
                 if (Command.getArgs().size() != 1) {
@@ -1025,6 +1152,78 @@ class SetUpAnalysis {
                 BigDecimal mean = mean(x);
                 BigDecimal median = median(x, 0, x.size() - 1);
                 BigDecimal diff = mean.subtract(median, mc);
+                Command suppress_ = SCI.commands.get("ober").get("suppress");
+                if (diff.compareTo(tolerance) < 0) { // within tolerance & normal dist
+                    SCI.putArgs(("suppress s " + Command.getArgs().get(0)).split(" "));
+                    suppress_.run();
+                    BigDecimal std = SCI.res.getValue();
+                    if (SCI.console)
+                        System.out.println("center: " + mean + " spread: " + std);
+                    StatList result = new StatList();
+                    result.add(new QuantitativeDatum(mean));
+                    result.add(new QuantitativeDatum(std));
+                    SCI.res = new CommandResult(result);
+                } else {
+                    SCI.putArgs(("suppress iqr " + Command.getArgs().get(0)).split(" "));
+                    suppress_.run();
+                    BigDecimal iqr = SCI.res.getValue();
+                    if (SCI.console)
+                        System.out.println("center: " + median + " spread: " + iqr);
+                    StatList result = new StatList();
+                    result.add(new QuantitativeDatum(median));
+                    result.add(new QuantitativeDatum(iqr));
+                    SCI.res = new CommandResult(result);
+                }
+            }
+        };
+        Command distCategorical = new Command("analysis", "\\dist", "\\dist <list_name> <index>", "Prints the appropriate center and spread for the <index>th elements of categorical list <list_name>", new String[][] {new String[] {"list_name", "The list to take the center and spread of."}, new String[] {"index", "The index of the categorical list describing the data set to take the center and spread of."}}){
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\dist` takes exactly two arguments.");
+                    return;
+                }
+                StatList y = SCI.categorical.get(Command.getArgs().get(0));
+                if (y == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                StatList x = new StatList();
+                for (Datum el : y) {
+                    x.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
+                }
+                BigDecimal mean = mean(x);
+                BigDecimal median = median(x, 0, x.size() - 1);
+                BigDecimal diff = mean.subtract(median, mc);
+                Command suppress_ = SCI.commands.get("ober").get("suppress");
+                if (diff.compareTo(tolerance) < 0) { // within tolerance & normal dist
+                    SCI.putArgs(("suppress \\s " + Command.getArgs().get(0) + " " + Command.getArgs().get(1)).split(" "));
+                    suppress_.run();
+                    BigDecimal std = SCI.res.getValue();
+                    if (SCI.console)
+                        System.out.println("center: " + mean + " spread: " + std);
+                    StatList result = new StatList();
+                    result.add(new QuantitativeDatum(mean));
+                    result.add(new QuantitativeDatum(std));
+                    SCI.res = new CommandResult(result);
+                } else {
+                    SCI.putArgs(("suppress \\iqr " + Command.getArgs().get(0) + " " + Command.getArgs().get(1)).split(" "));
+                    suppress_.run();
+                    BigDecimal iqr = SCI.res.getValue();
+                    if (SCI.console)
+                        System.out.println("center: " + median + " spread: " + iqr);
+                    StatList result = new StatList();
+                    result.add(new QuantitativeDatum(median));
+                    result.add(new QuantitativeDatum(iqr));
+                    SCI.res = new CommandResult(result);
+                }
             }
         };
     }
