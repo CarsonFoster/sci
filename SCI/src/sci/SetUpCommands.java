@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.awt.*;
+import javax.swing.*;
 
 /**
  *
@@ -28,7 +30,7 @@ public class SetUpCommands {
         SCI.addHelp(data_help);
         HelpMessage analysis_help = new HelpMessage("analysis", "help_msg", null, "analysis: Analyze the entered data.", null);
         SCI.addHelp(analysis_help);
-        HelpMessage graph_help = new HelpMessage("graph", "help_msg", null, "graph: Graph the data in various ways.", null);
+        HelpMessage graph_help = new HelpMessage("graphing", "help_msg", null, "graph: Graph the data in various ways.", null);
         SCI.addHelp(graph_help);
         
         // exit command definition; it's an obercommand
@@ -42,7 +44,7 @@ public class SetUpCommands {
         Command help = new Command("ober", "help", "help [<command>]", "Provides helpful information on commands.", 
                 "When no command is provided, the help message for the current module is printed.",
                 new String[][] {new String[] {"command", "Command/module to get help on; must be in the current module or an obercommand"}}) {
-            
+                    
             protected void helpModule(String module) {
                 System.out.println("Note: `help help` and `help ober` are useful too!");
                 System.out.println(SCI.help.get(module).get("help_msg"));
@@ -51,7 +53,7 @@ public class SetUpCommands {
                 Collections.sort(keys);
                 for (String key : keys) {
                     if (key.equals("help_msg")) continue;
-                    System.out.println(key + "\t\t\t" + SCI.help.get(module).get(key).getDescription());
+                    System.out.println(HelpMessage.pad(key) + SCI.help.get(module).get(key).getDescription());
                 }
             }        
             
@@ -187,6 +189,7 @@ public class SetUpCommands {
                 SCI.module = "graphing";
                 if (SCI.DEBUG) System.out.println(SCI.module);
                 SCI.res = null;
+                SetUpGraphing.main();
             }
         };
     }
@@ -387,7 +390,7 @@ class SetUpAnalysis {
                 SCI.res = new CommandResult(sum);
             }
         };
-        Command xbarCategorical = new Command("analysis", "\\xbar", "\\xbar <list_name> <index>", "Prints the sample mean of categorical list <list_name>'s <index>th elements", 
+        Command xbarCategorical = new Command("analysis", "\\xbar", "\\xbar <list_name> <index>", "Prints the sample mean of categorical list <list_name>'s <index>th elements.", 
                 "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to take the mean of."}, new String[] {"index", "The position of the quantitative data in the categorical unit list <list_name>."}}){
             protected void run() {
                 if (Command.getArgs().size() != 2) {
@@ -1034,7 +1037,7 @@ class SetUpAnalysis {
             }
         };
         
-        Command fivenum = new Command("analysis", "fivenum", "fivenum <list_name> <index>", "Prints the five number summary of the <index>th elements of categorical list <list_name>", new String[][] {new String[] {"list_name", "The list to take the five number summary of."}}) {
+        Command fivenum = new Command("analysis", "fivenum", "fivenum <list_name>", "Prints the five number summary of the list <list_name>.", new String[][] {new String[] {"list_name", "The list to take the five number summary of."}}) {
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`fivenum` takes exactly one argument.");
@@ -1079,7 +1082,7 @@ class SetUpAnalysis {
                 SCI.res = new CommandResult(result);
             }
         };
-        Command fivenumCategorical = new Command("analysis", "\\fivenum", "\\fivenum <list_name>", "Prints the five number summary of the list <list_name>", new String[][] {new String[] {"list_name", "The list to take the five number summary of."}, new String[] {"index", "The index of the categorical list describing the data set to take the center and spread of."}}) {
+        Command fivenumCategorical = new Command("analysis", "\\fivenum", "\\fivenum <list_name> <index>", "Prints the five number summary of the <index>th elements of categorical list <list_name>.", new String[][] {new String[] {"list_name", "The list to take the five number summary of."}, new String[] {"index", "The index of the categorical list describing the data set to take the center and spread of."}}) {
             protected void run() {
                 if (Command.getArgs().size() != 2) {
                     SCI.error("`\\fivenum` takes exactly two arguments.");
@@ -1104,27 +1107,27 @@ class SetUpAnalysis {
                 }
                 
                 String list = Command.getArgs().get(0);
-                String i = Integer.toString(index);
+                String i = Integer.toString(index + 1);
                 boolean console = SCI.console;
                 SCI.console = false;
                 SCI.putArgs(("\\min " + list + " " + i).split(" "));
-                SCI.commands.get("analysis").get("min").run();
+                SCI.commands.get("analysis").get("\\min").run();
                 BigDecimal min = SCI.res.getValue();
                 
                 SCI.putArgs(("\\max " + list + " " + i).split(" "));
-                SCI.commands.get("analysis").get("max").run();
+                SCI.commands.get("analysis").get("\\max").run();
                 BigDecimal max = SCI.res.getValue();
 
                 SCI.putArgs(("\\xtilde " + list + " " + i).split(" "));
-                SCI.commands.get("analysis").get("xtilde").run();
+                SCI.commands.get("analysis").get("\\xtilde").run();
                 BigDecimal median = SCI.res.getValue();
                 
                 SCI.putArgs(("\\q1 " + list + " " + i).split(" "));
-                SCI.commands.get("analysis").get("q1").run();
+                SCI.commands.get("analysis").get("\\q1").run();
                 BigDecimal q1 = SCI.res.getValue();
                 
                 SCI.putArgs(("\\q3 " + list + " " + i).split(" "));
-                SCI.commands.get("analysis").get("q3").run();
+                SCI.commands.get("analysis").get("\\q3").run();
                 BigDecimal q3 = SCI.res.getValue();
                 SCI.console = console;
                 if (SCI.console)
@@ -1138,7 +1141,7 @@ class SetUpAnalysis {
                 SCI.res = new CommandResult(result);
             }
         };
-        Command dist = new Command("analysis", "dist", "dist <list_name>", "Prints the appropriate center and spread for the list <list_name>", new String[][] {new String[] {"list_name", "The list to take the center and spread of."}}){
+        Command dist = new Command("analysis", "dist", "dist <list_name>", "Prints the appropriate center and spread for the list <list_name>.", new String[][] {new String[] {"list_name", "The list to take the center and spread of."}}){
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`dist` takes exactly one argument.");
@@ -1176,7 +1179,7 @@ class SetUpAnalysis {
                 }
             }
         };
-        Command distCategorical = new Command("analysis", "\\dist", "\\dist <list_name> <index>", "Prints the appropriate center and spread for the <index>th elements of categorical list <list_name>", new String[][] {new String[] {"list_name", "The list to take the center and spread of."}, new String[] {"index", "The index of the categorical list describing the data set to take the center and spread of."}}){
+        Command distCategorical = new Command("analysis", "\\dist", "\\dist <list_name> <index>", "Prints the appropriate center and spread for the <index>th elements of categorical list <list_name>.", new String[][] {new String[] {"list_name", "The list to take the center and spread of."}, new String[] {"index", "The index of the categorical list describing the data set to take the center and spread of."}}){
             protected void run() {
                 if (Command.getArgs().size() != 2) {
                     SCI.error("`\\dist` takes exactly two arguments.");
@@ -1224,6 +1227,33 @@ class SetUpAnalysis {
                     result.add(new QuantitativeDatum(iqr));
                     SCI.res = new CommandResult(result);
                 }
+            }
+        };
+    }
+}
+
+class SetUpGraphing {
+    private static JFrame frame;
+    private static void createWindow() {
+        frame = new JFrame("SCI Graphing");
+        frame.setPreferredSize(new Dimension(500, 500));
+        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        //Display the window.
+        frame.setLocationRelativeTo(null);
+        frame.pack();
+        frame.setVisible(false);
+    }
+    
+    public static void main() {
+        createWindow();
+        Command show = new Command("graphing", "show", "show", "Shows the graphical window.", null) {
+            protected void run() {
+                frame.setVisible(true);
+            }
+        };
+        Command hide = new Command("graphing", "hide", "hide", "Hides the graphical window.", null) {
+            protected void run() {
+                frame.setVisible(false);
             }
         };
     }

@@ -30,6 +30,17 @@ public class HelpMessage {
         extended = extended_description;
     }
     
+    private static final int SPACES = 20;
+            
+    protected static String pad(String x) {
+        int numSpaces = SPACES - x.length();
+        String padded = x;
+        for (int i = 0; i < numSpaces; i++) {
+            padded += " ";
+        }
+        return padded;
+    }
+    
     // of the form:
     // Usage: <usage string here>
     // <description here>
@@ -46,8 +57,8 @@ public class HelpMessage {
         if (flags.size() > 0)
             out += "\n";
         for (String[] flag : flags) {
-            out += "\n" + flag[0];
-            out += "\t\t\t" + flag[1];
+            out += "\n" + pad(flag[0]);
+            out += flag[1];
         }
         return out;
     }
