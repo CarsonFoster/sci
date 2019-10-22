@@ -1233,15 +1233,9 @@ class SetUpAnalysis {
 }
 
 class SetUpGraphing {
-    private static JFrame frame;
+    private static GraphFrame frame;
     private static void createWindow() {
-        frame = new JFrame("SCI Graphing");
-        frame.setPreferredSize(new Dimension(500, 500));
-        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        //Display the window.
-        frame.setLocationRelativeTo(null);
-        frame.pack();
-        frame.setVisible(false);
+        frame = new GraphFrame();
     }
     
     public static void main() {
