@@ -1,25 +1,44 @@
 package sci;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import javax.swing.*;
 
 public class GraphFrame extends JFrame {
-    private final int X = 500, Y = 500;
-    private final int PADDING = 40;
+    private final static int X = 500, Y = 500;
+    private final static int PADDING = 40;
+    private final static int XAXIS = X - PADDING * 2, YAXIS = Y - PADDING * 2;
+    
+    protected static GraphicsRunnable painter;
             
-    private void drawRect(Graphics g, Rectangle rect, Color x) {
+    protected static void drawRect(Graphics g, Rectangle rect, Color x) {
         g.setColor(x);
         g.fillRect(rect.x, rect.y, rect.width, rect.height);
     }
     
-    private void drawAxes(Graphics g, String x, String y) {
+    protected static void drawAxes(Graphics g, String x, String y, String title) {
         // padding | graph | padding
         // (padding, padding) -> (padding, y-padding)
         g.drawLine(PADDING, PADDING, PADDING, Y - PADDING);
         g.drawLine(PADDING, Y - PADDING, X - PADDING, Y - PADDING);
         
+        Font original = g.getFont();
         // (padding + (x - padding * 2) / 2)
-        g.drawString(x, PADDING + (X - PADDING * 2) / 2, Y - PADDING / 2);
+        int xLength = g.getFontMetrics().stringWidth(x), height = g.getFontMetrics().getMaxAscent();
+        g.drawString(x, PADDING + XAXIS / 2 - xLength / 2, Y - g.getFontMetrics().getMaxDescent());
+        
+        Font bold = new Font(null, Font.BOLD, original.getSize() * 2);
+        int titleLength = g.getFontMetrics(bold).stringWidth(title);
+        g.setFont(bold);
+        g.drawString(title, X / 2 - titleLength / 2, g.getFontMetrics(bold).getMaxAscent());
+        
+        int yLength = g.getFontMetrics().stringWidth(y);
+        AffineTransform at = new AffineTransform();
+        at.rotate(Math.toRadians(-90), 0, 0);
+        Font rotated = original.deriveFont(at);
+        g.setFont(rotated);
+        g.drawString(y, height, PADDING + YAXIS / 2 - yLength / 2);
+        g.setFont(original);
     }
     
     class SciPanel extends JPanel {
@@ -35,7 +54,7 @@ public class GraphFrame extends JFrame {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             
-            drawAxes(g, "Test", "");
+            painter.paint(g);
         }
     }
     
@@ -48,4 +67,8 @@ public class GraphFrame extends JFrame {
         pack();
         setVisible(false);
     }
+}
+
+interface GraphicsRunnable {
+    public void paint(Graphics g);
 }

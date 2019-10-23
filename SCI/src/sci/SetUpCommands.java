@@ -1240,6 +1240,7 @@ class SetUpGraphing {
     
     public static void main() {
         createWindow();
+        GraphFrame.painter = (g) -> GraphFrame.drawAxes(g, "Hi", "Bye", "This is a Title");
         Command show = new Command("graphing", "show", "show", "Shows the graphical window.", null) {
             protected void run() {
                 frame.setVisible(true);
