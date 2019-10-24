@@ -1251,5 +1251,41 @@ class SetUpGraphing {
                 frame.setVisible(false);
             }
         };
+        
+        Command bar = new Command("graphing", "\\bar", "\\bar <list_name> <index>", "Displays a bar graph of the categorical values described by <index> in categorical list <list_name>", new String[][] {new String[] {"list_name", "The name of the list to display the bar graph of."}, new String[] {"index", "The index of the categorical values to create a bar graph from."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\bar` takes exactly two arguments.");
+                    return;
+                }
+                StatList y = SCI.categorical.get(Command.getArgs().get(0));
+                if (y == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                
+                ArrayList<String> values = new ArrayList<>();
+                y.forEach((Datum x) -> values.add(((CategoricalUnit)x).getValue(index)));
+                
+                Scanner cin = new Scanner(System.in);
+                System.out.print("X-Axis Label > ");
+                String x = cin.nextLine().trim();
+                System.out.print("Title > ");
+                String title = cin.nextLine().trim();
+                GraphFrame.painter = (g) -> {
+                    GraphFrame.drawAxes(g, x, "Frequency of " + x, title);
+                };
+                frame.setVisible(false);
+                frame.setVisible(true);
+            }
+        };
     }
 }

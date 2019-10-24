@@ -2,15 +2,30 @@ package sci;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.swing.*;
 
 public class GraphFrame extends JFrame {
     private final static int X = 500, Y = 500;
     private final static int PADDING = 40;
     private final static int XAXIS = X - PADDING * 2, YAXIS = Y - PADDING * 2;
+    private final static int BAR_PADDING_MIN = 5;
     
     protected static GraphicsRunnable painter;
             
+    protected static void drawBars(Graphics g, ArrayList<String> values) {
+        HashMap<String, Integer> unique = new HashMap<>();
+        values.forEach(s -> {
+            if (unique.containsKey(s)) unique.put(s, unique.get(s));
+            else unique.put(s, 1);
+        });
+        int maxHeight = 0;
+        int bars = unique.size();
+        int bar_width = XAXIS / bars - BAR_PADDING_MIN;
+        
+    }
+    
     protected static void drawRect(Graphics g, Rectangle rect, Color x) {
         g.setColor(x);
         g.fillRect(rect.x, rect.y, rect.width, rect.height);
@@ -32,12 +47,12 @@ public class GraphFrame extends JFrame {
         g.setFont(bold);
         g.drawString(title, X / 2 - titleLength / 2, g.getFontMetrics(bold).getMaxAscent());
         
-        int yLength = g.getFontMetrics().stringWidth(y);
+        int yLength = g.getFontMetrics(original).stringWidth(y);
         AffineTransform at = new AffineTransform();
         at.rotate(Math.toRadians(-90), 0, 0);
         Font rotated = original.deriveFont(at);
         g.setFont(rotated);
-        g.drawString(y, height, PADDING + YAXIS / 2 - yLength / 2);
+        g.drawString(y, height, PADDING + (YAXIS / 2) + (yLength / 2));
         g.setFont(original);
     }
     
