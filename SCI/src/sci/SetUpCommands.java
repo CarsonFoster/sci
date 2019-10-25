@@ -1267,6 +1267,7 @@ class SetUpGraphing {
                 int index;
                 try {
                     index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                    ((CategoricalUnit)y.get(0)).getValue(index);
                 } catch (Exception e) {
                     SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
                     return;
@@ -1282,6 +1283,7 @@ class SetUpGraphing {
                 String title = cin.nextLine().trim();
                 GraphFrame.painter = (g) -> {
                     GraphFrame.drawAxes(g, x, "Frequency of " + x, title);
+                    GraphFrame.drawBars(g, values);
                 };
                 frame.setVisible(false);
                 frame.setVisible(true);

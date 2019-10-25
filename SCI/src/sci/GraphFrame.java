@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 
 public class GraphFrame extends JFrame {
@@ -17,13 +18,28 @@ public class GraphFrame extends JFrame {
     protected static void drawBars(Graphics g, ArrayList<String> values) {
         HashMap<String, Integer> unique = new HashMap<>();
         values.forEach(s -> {
-            if (unique.containsKey(s)) unique.put(s, unique.get(s));
+            if (unique.containsKey(s)) unique.put(s, unique.get(s) + 1);
             else unique.put(s, 1);
         });
         int maxHeight = 0;
+        for (Map.Entry<String, Integer> x : unique.entrySet()) {
+            if (x.getValue() > maxHeight) {
+                maxHeight = x.getValue();
+            }
+        }
         int bars = unique.size();
         int bar_width = XAXIS / bars - BAR_PADDING_MIN;
+        int scale = YAXIS / bars, i = 0;
+        Color[] colors = new Color[] {new Color(188, 83, 77), new Color(81, 126, 194), new Color(155, 187, 88), new Color(179, 119, 63)};
         
+        FontMetrics fm = g.getFontMetrics();
+        for (Map.Entry<String, Integer> x : unique.entrySet()) {
+            int freq = x.getValue();
+            String name = x.getKey();
+            drawRect(g, new Rectangle(PADDING + BAR_PADDING_MIN + i * (bar_width + BAR_PADDING_MIN), PADDING + YAXIS - freq * scale, bar_width, freq * scale), colors[i % 4]);
+            g.drawString(name, BAR_PADDING_MIN + PADDING + bar_width / 2 + i * (bar_width + BAR_PADDING_MIN) - fm.stringWidth(name) / 2, PADDING + YAXIS + fm.getHeight());
+            i++;
+        }
     }
     
     protected static void drawRect(Graphics g, Rectangle rect, Color x) {
