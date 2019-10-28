@@ -12,6 +12,7 @@ public class GraphFrame extends JFrame {
     private final static int PADDING = 40;
     private final static int XAXIS = X - PADDING * 2, YAXIS = Y - PADDING * 2;
     private final static int BAR_PADDING_MIN = 5;
+    private final static int SCALE_PADDING_MIN = 2, SCALE_LENGTH = 3;
     
     protected static GraphicsRunnable painter;
             
@@ -29,17 +30,31 @@ public class GraphFrame extends JFrame {
         }
         int bars = unique.size();
         int bar_width = XAXIS / bars - BAR_PADDING_MIN;
-        int scale = YAXIS / bars, i = 0;
-        Color[] colors = new Color[] {new Color(188, 83, 77), new Color(81, 126, 194), new Color(155, 187, 88), new Color(179, 119, 63)};
-        
+        int scale_padding = YAXIS / maxHeight, i = 0;
+        int coeff = 1;
+        while (scale_padding < SCALE_PADDING_MIN) {
+            coeff ++;
+            scale_padding = YAXIS / (maxHeight / coeff);
+        }
+        g.setColor(Color.BLACK);
         FontMetrics fm = g.getFontMetrics();
+        for (int j = 0; j < maxHeight / coeff; j++) {
+            g.drawLine(PADDING - SCALE_LENGTH, PADDING + YAXIS - j * scale_padding, PADDING, PADDING + YAXIS - j * scale_padding);
+            String num = Integer.toString(j * coeff);
+            g.drawString(num, PADDING - SCALE_LENGTH - fm.stringWidth(num), PADDING + YAXIS - j * scale_padding + fm.getAscent() / 2);
+        }
+        Color[] colors = new Color[] {new Color(188, 83, 77), new Color(81, 126, 194), new Color(155, 187, 88), new Color(179, 119, 63)}; //kys
+        
+        
         for (Map.Entry<String, Integer> x : unique.entrySet()) {
             int freq = x.getValue();
             String name = x.getKey();
-            drawRect(g, new Rectangle(PADDING + BAR_PADDING_MIN + i * (bar_width + BAR_PADDING_MIN), PADDING + YAXIS - freq * scale, bar_width, freq * scale), colors[i % 4]);
+            drawRect(g, new Rectangle(PADDING + BAR_PADDING_MIN + i * (bar_width + BAR_PADDING_MIN), PADDING + YAXIS - freq / coeff * scale_padding, bar_width, freq / coeff * scale_padding), colors[i % 4]);
             g.drawString(name, BAR_PADDING_MIN + PADDING + bar_width / 2 + i * (bar_width + BAR_PADDING_MIN) - fm.stringWidth(name) / 2, PADDING + YAXIS + fm.getHeight());
             i++;
         }
+        
+        
     }
     
     protected static void drawRect(Graphics g, Rectangle rect, Color x) {
