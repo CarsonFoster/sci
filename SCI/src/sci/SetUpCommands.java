@@ -798,11 +798,11 @@ class SetUpAnalysis {
                 
             }
         };
-        Command nCategorical = new Command("analysis", "\\n", "\\n <list_name> <index>", "Prints the number of elements in categorical list <list_name>'s <index>th elements.", 
-                "Indices start at 1.", new String[][] {new String[] {"list_name", "The name of the list to find the number of elements of."}}) { 
+        Command nCategorical = new Command("analysis", "\\n", "\\n <list_name>", "Prints the number of categorical groups in categorical list <list_name>.", 
+                new String[][] {new String[] {"list_name", "The name of the list to find the number of elements of."}}) { 
             protected void run() {
-                if (Command.getArgs().size() != 2) {
-                    SCI.error("`\\n` takes exactly two arguments.");
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`\\n` takes exactly one argument.");
                     return;
                 }
                 StatList x = SCI.categorical.get(Command.getArgs().get(0));
@@ -810,18 +810,7 @@ class SetUpAnalysis {
                     SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
                     return;
                 }
-                int index;
-                try {
-                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
-                } catch (Exception e) {
-                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
-                    return;
-                }
-                StatList xCopy = new StatList();
-                for (Datum el : x) {
-                    xCopy.add(new QuantitativeDatum(((CategoricalUnit)el).getQuantValue(index)));
-                }
-                int s = xCopy.size();
+                int s = x.size();
                 if (SCI.console)
                     System.out.println(s);
                 SCI.res = new CommandResult(new BigDecimal(s));
