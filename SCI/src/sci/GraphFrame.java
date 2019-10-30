@@ -2,6 +2,8 @@ package sci;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,9 +15,21 @@ public class GraphFrame extends JFrame {
     private final static int XAXIS = X - PADDING * 2, YAXIS = Y - PADDING * 2;
     private final static int BAR_PADDING_MIN = 5;
     private final static int SCALE_LENGTH = 3;
+    private final static int LINE_WIDTH = 1; // i think?
     
     protected static GraphicsRunnable painter;
             
+    protected static void drawPie(Graphics g, ArrayList<String> values) {
+        HashMap<String, BigDecimal> unique = new HashMap<>();
+        values.forEach(s -> {
+           if (unique.containsKey(s)) unique.put(s, unique.get(s).add(BigDecimal.ONE));
+           else unique.put(s, BigDecimal.ONE);
+        });
+        for (Map.Entry<String, BigDecimal> x : unique.entrySet()){
+            unique.put(x.getKey(), x.getValue().divide(new BigDecimal(values.size()), new MathContext(5)));
+        }
+    }
+    
     protected static void drawBars(Graphics g, ArrayList<String> values) {
         // get unique values and count
         HashMap<String, Integer> unique = new HashMap<>();
@@ -37,14 +51,14 @@ public class GraphFrame extends JFrame {
         int min_scale_padding = (int)(fm.getMaxAscent());// * 0.7);
         
         // determine the space between each scale and the actual number each scale mark increases by (coefficient)
-        int scale_padding = YAXIS / maxHeight;
+        int scale_padding = YAXIS / maxHeight - LINE_WIDTH;
         int coeff = 1;
         while (scale_padding < min_scale_padding) {
             coeff ++;
-            scale_padding = YAXIS / (maxHeight / coeff);
+            scale_padding = YAXIS / (maxHeight / coeff) - LINE_WIDTH;
         }
         g.setColor(Color.BLACK);
-        if (SCI.DEBUG) System.out.println(scale_padding + " " + coeff + " " + fm.getMaxAscent()); //15 5 13
+        //if (SCI.DEBUG) System.out.println(scale_padding + " " + coeff + " " + fm.getMaxAscent()); //15 5 13
         
         // drawing the scale lines and numbers
         for (int j = 0; j <= Math.ceil(maxHeight / coeff) + 1; j++) {
@@ -57,10 +71,15 @@ public class GraphFrame extends JFrame {
         int i = 0;
         for (Map.Entry<String, Integer> x : unique.entrySet()) {
             int freq = x.getValue();
-            drawRect(g, new Rectangle(PADDING + BAR_PADDING_MIN + i * (bar_width + BAR_PADDING_MIN), PADDING + YAXIS - (int)((double)freq / coeff * scale_padding), bar_width, (int)((double)freq / coeff * scale_padding)), colors[i % 4]);
-            // draw the label of the bar
+            int x1 = PADDING + BAR_PADDING_MIN + i * (bar_width + BAR_PADDING_MIN), y1 = PADDING + YAXIS - (int)((double)freq / coeff * scale_padding);
+            int w = bar_width, h = (int)((double)freq / coeff * scale_padding);
+            drawRect(g, new Rectangle(x1, y1, w, h), colors[i % 4]);
+            // draw the label and frequency of the bar
             String name = x.getKey();
-            g.drawString(name, BAR_PADDING_MIN + PADDING + bar_width / 2 + i * (bar_width + BAR_PADDING_MIN) - fm.stringWidth(name) / 2, PADDING + YAXIS + fm.getHeight());
+            String num = Integer.toString(freq);
+            int half_width = BAR_PADDING_MIN + PADDING + bar_width / 2 + i * (bar_width + BAR_PADDING_MIN);
+            g.drawString(name, half_width - fm.stringWidth(name) / 2, PADDING + YAXIS + fm.getHeight());
+            g.drawString(num, half_width - fm.stringWidth(num) / 2, y1 - fm.getMaxDescent());
             i++; // number of bars - 1
         }
         
@@ -81,7 +100,7 @@ public class GraphFrame extends JFrame {
         Font original = g.getFont();
         // (padding + (x - padding * 2) / 2)
         int xLength = g.getFontMetrics().stringWidth(x), height = g.getFontMetrics().getMaxAscent();
-        g.drawString(x, PADDING + XAXIS / 2 - xLength / 2, Y - g.getFontMetrics().getMaxDescent());
+        g.drawString(x, PADDING + XAXIS / 2 - xLength / 2, Y - g.getFontMetrics().getMaxDescent() - 5);
         
         Font bold = new Font(null, Font.BOLD, original.getSize() * 2);
         int titleLength = g.getFontMetrics(bold).stringWidth(title);

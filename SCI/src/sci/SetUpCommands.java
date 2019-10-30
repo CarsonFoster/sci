@@ -1278,5 +1278,40 @@ class SetUpGraphing {
                 frame.setVisible(true);
             }
         };
+        
+        Command pie = new Command("graphing", "\\pie", "\\bar <list_name> <index>", "Displays a pie graph of the categorical values described by <index> in categorical list <list_name>", new String[][] {new String[] {"list_name", "The name of the list to display the pie graph of."}, new String[] {"index", "The index of the categorical values to create a pie graph from."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\pie` takes exactly two arguments.");
+                    return;
+                }
+                StatList y = SCI.categorical.get(Command.getArgs().get(0));
+                if (y == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                    ((CategoricalUnit)y.get(0)).getValue(index);
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                
+                ArrayList<String> values = new ArrayList<>();
+                y.forEach((Datum x) -> values.add(((CategoricalUnit)x).getValue(index)));
+                
+                Scanner cin = new Scanner(System.in);
+                System.out.print("Title > ");
+                String title = cin.nextLine().trim();
+                GraphFrame.painter = (g) -> {
+                    
+                };
+                frame.setVisible(false);
+                frame.setVisible(true);
+            }
+        };
     }
 }
