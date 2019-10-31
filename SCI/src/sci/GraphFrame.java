@@ -20,13 +20,23 @@ public class GraphFrame extends JFrame {
     protected static GraphicsRunnable painter;
             
     protected static void drawPie(Graphics g, ArrayList<String> values) {
-        HashMap<String, BigDecimal> unique = new HashMap<>();
+        HashMap<String, Integer> unique = new HashMap<>();
         values.forEach(s -> {
-           if (unique.containsKey(s)) unique.put(s, unique.get(s).add(BigDecimal.ONE));
-           else unique.put(s, BigDecimal.ONE);
+           if (unique.containsKey(s)) unique.put(s, unique.get(s) + 1);
+           else unique.put(s, 1);
         });
-        for (Map.Entry<String, BigDecimal> x : unique.entrySet()){
-            unique.put(x.getKey(), x.getValue().divide(new BigDecimal(values.size()), new MathContext(5)));
+        ArrayList<Map.Entry<String, Integer>> arr = new ArrayList<>();
+        for (Map.Entry<String, Integer> x : unique.entrySet()){
+            unique.put(x.getKey(), (int)((double)x.getValue() / unique.size() * 360));
+            arr.add(x);
+        }
+        int angle = 0;
+        Color[] colors = new Color[] {new Color(188, 83, 77), new Color(81, 126, 194), new Color(155, 187, 88), new Color(179, 119, 63)}; //kys
+        for (int i = 0; i < arr.size(); i++) {
+            Map.Entry<String, Integer> x = arr.get(i);
+            g.setColor(colors[i % 4]);
+            g.fillArc(0, 0, X, Y, angle, x.getValue());
+            angle += x.getValue();
         }
     }
     

@@ -1307,7 +1307,7 @@ class SetUpGraphing {
                 System.out.print("Title > ");
                 String title = cin.nextLine().trim();
                 GraphFrame.painter = (g) -> {
-                    
+                    GraphFrame.drawPie(g, values);
                 };
                 frame.setVisible(false);
                 frame.setVisible(true);
