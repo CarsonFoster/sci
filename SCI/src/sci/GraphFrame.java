@@ -11,7 +11,7 @@ import javax.swing.*;
 
 public class GraphFrame extends JFrame {
     private final static int X = 500, Y = 500;
-    private final static int PADDING = 40;
+    private final static int PADDING = 40, PIE_PADDING = 20;
     private final static int XAXIS = X - PADDING * 2, YAXIS = Y - PADDING * 2;
     private final static int BAR_PADDING_MIN = 5;
     private final static int SCALE_LENGTH = 3;
@@ -27,16 +27,24 @@ public class GraphFrame extends JFrame {
         });
         ArrayList<Map.Entry<String, Integer>> arr = new ArrayList<>();
         for (Map.Entry<String, Integer> x : unique.entrySet()){
-            unique.put(x.getKey(), (int)((double)x.getValue() / unique.size() * 360));
+            unique.put(x.getKey(), (int)((double)x.getValue() / values.size() * 360));
             arr.add(x);
         }
         int angle = 0;
         Color[] colors = new Color[] {new Color(188, 83, 77), new Color(81, 126, 194), new Color(155, 187, 88), new Color(179, 119, 63)}; //kys
         for (int i = 0; i < arr.size(); i++) {
             Map.Entry<String, Integer> x = arr.get(i);
+            int theta = x.getValue();
+            int width = X - PIE_PADDING * 2, height = Y - PIE_PADDING * 2;
+            int x1 = (int)-Math.round(Math.cos((theta + angle) / 2) * width / 4) + (width / 2 + PIE_PADDING);
+            int y1 = (int)-Math.round(Math.sin((theta + angle) / 2) * width / 4) + (height / 2 + PIE_PADDING);
+            String text = x.getKey() + " " + new BigDecimal(theta).divide(new BigDecimal(3.6), new MathContext(4)) + "%";
             g.setColor(colors[i % 4]);
-            g.fillArc(0, 0, X, Y, angle, x.getValue());
-            angle += x.getValue();
+            g.fillArc(PIE_PADDING, PIE_PADDING, width, height, angle, theta);
+            g.setColor(Color.BLACK);
+            g.drawString(text, x1, y1);
+            
+            angle += theta;
         }
     }
     
