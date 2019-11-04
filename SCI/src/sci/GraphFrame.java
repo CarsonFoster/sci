@@ -11,7 +11,7 @@ import javax.swing.*;
 
 public class GraphFrame extends JFrame {
     private final static int X = 500, Y = 500;
-    private final static int PADDING = 40, PIE_PADDING = 20;
+    private final static int PADDING = 40, PIE_PADDING = 30;
     private final static int XAXIS = X - PADDING * 2, YAXIS = Y - PADDING * 2;
     private final static int BAR_PADDING_MIN = 5;
     private final static int SCALE_LENGTH = 3;
@@ -19,7 +19,8 @@ public class GraphFrame extends JFrame {
     
     protected static GraphicsRunnable painter;
             
-    protected static void drawPie(Graphics g, ArrayList<String> values) {
+    protected static void drawPie(Graphics g, ArrayList<String> values, String title) {
+        drawTitle(g, title, g.getFont());
         HashMap<String, Integer> unique = new HashMap<>();
         values.forEach(s -> {
            if (unique.containsKey(s)) unique.put(s, unique.get(s) + 1);
@@ -36,10 +37,13 @@ public class GraphFrame extends JFrame {
             Map.Entry<String, Integer> x = arr.get(i);
             int theta = x.getValue();
             int width = X - PIE_PADDING * 2, height = Y - PIE_PADDING * 2;
-            int x1 = (int)-Math.round(Math.cos((theta + angle) / 2) * width / 4) + (width / 2 + PIE_PADDING);
-            int y1 = (int)-Math.round(Math.sin((theta + angle) / 2) * width / 4) + (height / 2 + PIE_PADDING);
-            String text = x.getKey() + " " + new BigDecimal(theta).divide(new BigDecimal(3.6), new MathContext(4)) + "%";
-            g.setColor(colors[i % 4]);
+            int x1 = (int)Math.round(Math.cos(Math.toRadians(theta / 2 + angle)) * width / 4) + (width / 2 + PIE_PADDING);
+            int y1 = -(int)Math.round(Math.sin(Math.toRadians(theta / 2 + angle)) * width / 4) + (height / 2 + PIE_PADDING);
+            String text = x.getKey() + " = " + new BigDecimal(theta).divide(new BigDecimal(3.6), new MathContext(4)) + "%";
+            if (arr.size() % 4 == 1 && i == arr.size() - 1)
+                g.setColor(colors[1 + i % 2]);
+            else
+                g.setColor(colors[i % 4]);
             g.fillArc(PIE_PADDING, PIE_PADDING, width, height, angle, theta);
             g.setColor(Color.BLACK);
             g.drawString(text, x1, y1);
@@ -109,6 +113,14 @@ public class GraphFrame extends JFrame {
         g.fillRect(rect.x, rect.y, rect.width, rect.height);
     }
     
+    protected static void drawTitle(Graphics g, String title, Font original) {
+        Font bold = new Font(null, Font.BOLD, original.getSize() * 2);
+        int titleLength = g.getFontMetrics(bold).stringWidth(title);
+        g.setFont(bold);
+        g.drawString(title, X / 2 - titleLength / 2, g.getFontMetrics(bold).getMaxAscent());
+        g.setFont(original);
+    }
+    
     protected static void drawAxes(Graphics g, String x, String y, String title) {
         // padding | graph | padding
         // (padding, padding) -> (padding, y-padding)
@@ -120,10 +132,7 @@ public class GraphFrame extends JFrame {
         int xLength = g.getFontMetrics().stringWidth(x), height = g.getFontMetrics().getMaxAscent();
         g.drawString(x, PADDING + XAXIS / 2 - xLength / 2, Y - g.getFontMetrics().getMaxDescent() - 5);
         
-        Font bold = new Font(null, Font.BOLD, original.getSize() * 2);
-        int titleLength = g.getFontMetrics(bold).stringWidth(title);
-        g.setFont(bold);
-        g.drawString(title, X / 2 - titleLength / 2, g.getFontMetrics(bold).getMaxAscent());
+        drawTitle(g, title, original);
         
         int yLength = g.getFontMetrics(original).stringWidth(y);
         AffineTransform at = new AffineTransform();
