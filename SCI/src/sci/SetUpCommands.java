@@ -1313,5 +1313,60 @@ class SetUpGraphing {
                 frame.setVisible(true);
             }
         };
+        
+        Command histC = new Command("graphing", "\\hist", "\\hist <list_name> <index>", "Displays a histogram of the quantitative values described by <index> in categorical list <list_name>", new String[][] {new String[] {"list_name", "The name of the list to display the histogram of."}, new String[] {"index", "The index of the categorical values to create a histogram from."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\hist` takes exactly two arguments.");
+                    return;
+                }
+                StatList y = SCI.categorical.get(Command.getArgs().get(0));
+                if (y == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                    ((CategoricalUnit)y.get(0)).getQuantValue(index);
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                
+                ArrayList<BigDecimal> values = new ArrayList<>();
+                y.forEach((Datum x) -> values.add(((CategoricalUnit)x).getQuantValue(index)));
+                
+                Scanner cin = new Scanner(System.in);
+                System.out.print("Title > ");
+                String title = cin.nextLine().trim();
+                System.out.print("Y-Axis Title > ");
+                String yaxis = cin.nextLine().trim();
+                System.out.print("X Minimum (enter = auto)> ");
+                String xminStr = cin.nextLine().trim();
+                BigDecimal xmin;
+                boolean xmin_auto = false;
+                if (xminStr.length() == 0) {
+                    xmin_auto = true;
+                } else {
+                    xmin = new BigDecimal(xminStr);
+                }
+                System.out.print("X Step (enter = auto)> ");
+                String xstepStr = cin.nextLine().trim();
+                BigDecimal xstep;
+                boolean xstep_auto = false;
+                if (xstepStr.length() == 0) {
+                    xstep_auto = true;
+                } else {
+                    xstep = new BigDecimal(xminStr);
+                }
+                GraphFrame.painter = (g) -> {
+                    GraphFrame.drawAxes(g, "", yaxis, title);
+                };
+                frame.setVisible(false);
+                frame.setVisible(true);
+            }
+        };
     }
 }

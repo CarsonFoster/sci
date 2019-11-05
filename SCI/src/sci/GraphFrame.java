@@ -5,8 +5,10 @@ import java.awt.geom.AffineTransform;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.swing.*;
 
 public class GraphFrame extends JFrame {
@@ -19,6 +21,14 @@ public class GraphFrame extends JFrame {
     
     protected static GraphicsRunnable painter;
             
+    protected static void drawHistogramAxes(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
+        BigDecimal max = values.stream().max(Comparator.naturalOrder()).get();
+        // assuming auto is false, do later
+        for (BigDecimal i = xmin; i.compareTo(max) < 0; i = i.add(xstep)) {
+            
+        }
+    }
+    
     protected static void drawPie(Graphics g, ArrayList<String> values, String title) {
         drawTitle(g, title, g.getFont());
         HashMap<String, Integer> unique = new HashMap<>();
@@ -39,7 +49,7 @@ public class GraphFrame extends JFrame {
             int width = X - PIE_PADDING * 2, height = Y - PIE_PADDING * 2;
             int x1 = (int)Math.round(Math.cos(Math.toRadians(theta / 2 + angle)) * width / 4) + (width / 2 + PIE_PADDING);
             int y1 = -(int)Math.round(Math.sin(Math.toRadians(theta / 2 + angle)) * width / 4) + (height / 2 + PIE_PADDING);
-            String text = x.getKey() + " = " + new BigDecimal(theta).divide(new BigDecimal(3.6), new MathContext(4)) + "%";
+            String text = new BigDecimal(theta).divide(new BigDecimal(3.6), new MathContext(4)) + "% = " + x.getKey();
             if (arr.size() % 4 == 1 && i == arr.size() - 1)
                 g.setColor(colors[1 + i % 2]);
             else
