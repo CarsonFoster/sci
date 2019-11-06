@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,10 +23,15 @@ public class GraphFrame extends JFrame {
     protected static GraphicsRunnable painter;
             
     protected static void drawHistogramAxes(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
-        BigDecimal max = values.stream().max(Comparator.naturalOrder()).get();
+        BigDecimal max = values.stream().max(Comparator.naturalOrder()).get(); // 7.3; min = 2.1; step = 0.6
         // assuming auto is false, do later
+        int width = (max.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
+        int x = PADDING;
+        FontMetrics fm = g.getFontMetrics();
         for (BigDecimal i = xmin; i.compareTo(max) < 0; i = i.add(xstep)) {
-            
+            g.drawLine(x, Y + PADDING, x, Y + PADDING + 20);
+            g.drawString(i.toString(), x - fm.stringWidth(i.toString()), Y + PADDING + 10 + fm.getMaxAscent());
+            x += width;
         }
     }
     

@@ -1345,7 +1345,7 @@ class SetUpGraphing {
                 String yaxis = cin.nextLine().trim();
                 System.out.print("X Minimum (enter = auto)> ");
                 String xminStr = cin.nextLine().trim();
-                BigDecimal xmin;
+                BigDecimal xmin = null;
                 boolean xmin_auto = false;
                 if (xminStr.length() == 0) {
                     xmin_auto = true;
@@ -1354,15 +1354,21 @@ class SetUpGraphing {
                 }
                 System.out.print("X Step (enter = auto)> ");
                 String xstepStr = cin.nextLine().trim();
-                BigDecimal xstep;
+                BigDecimal xstep = null;
                 boolean xstep_auto = false;
                 if (xstepStr.length() == 0) {
                     xstep_auto = true;
                 } else {
-                    xstep = new BigDecimal(xminStr);
+                    xstep = new BigDecimal(xstepStr);
                 }
+                final BigDecimal xminf = xmin;
+                final boolean xmin_autof = xmin_auto;
+                final BigDecimal xstepf = xstep;
+                System.out.println(xstepf);
+                final boolean xstep_autof = xstep_auto;
                 GraphFrame.painter = (g) -> {
                     GraphFrame.drawAxes(g, "", yaxis, title);
+                    GraphFrame.drawHistogramAxes(g, values, xminf, xmin_autof, xstepf, xstep_autof);
                 };
                 frame.setVisible(false);
                 frame.setVisible(true);
