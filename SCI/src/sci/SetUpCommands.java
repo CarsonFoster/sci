@@ -1364,11 +1364,11 @@ class SetUpGraphing {
                 final BigDecimal xminf = xmin;
                 final boolean xmin_autof = xmin_auto;
                 final BigDecimal xstepf = xstep;
-                System.out.println(xstepf);
                 final boolean xstep_autof = xstep_auto;
                 GraphFrame.painter = (g) -> {
                     GraphFrame.drawAxes(g, "", yaxis, title);
                     GraphFrame.drawHistogramAxes(g, values, xminf, xmin_autof, xstepf, xstep_autof);
+                    GraphFrame.drawHistogramBars(g, values, xminf, xmin_autof, xstepf, xstep_autof);
                 };
                 frame.setVisible(false);
                 frame.setVisible(true);

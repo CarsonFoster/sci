@@ -22,15 +22,40 @@ public class GraphFrame extends JFrame {
     
     protected static GraphicsRunnable painter;
             
+    protected static void drawHistogramBars(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
+        // assuming auto is false
+        BigDecimal max = values.stream().max(Comparator.naturalOrder()).get();
+        BigDecimal biggest_label = max.divideToIntegralValue(xstep).add(BigDecimal.ONE).multiply(xstep);
+        BigDecimal[] labels = new BigDecimal[(biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact()];
+        
+        int index = 0;
+        for (BigDecimal i = xmin; i.compareTo(biggest_label) <= 0; i = i.add(xstep)) {
+            labels[index++] = i;
+        }
+        
+        int[] heights = new int[labels.length - 1];
+        for (int i = 0; i < heights.length; i++) {
+            for (BigDecimal v: values) {
+                if (v.compareTo(labels[i]) >= 0 && v.compareTo(labels[i + 1]) < 0) {
+                    heights[i]++;
+                }
+            }
+            System.out.println(heights[i]);
+        }
+        System.out.println("----");
+    }
+    
     protected static void drawHistogramAxes(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
-        BigDecimal max = values.stream().max(Comparator.naturalOrder()).get(); // 7.3; min = 2.1; step = 0.6
+        BigDecimal max = values.stream().max(Comparator.naturalOrder()).get();
+        BigDecimal biggest_label = max.divideToIntegralValue(xstep).add(BigDecimal.ONE).multiply(xstep);
         // assuming auto is false, do later
-        int width = (max.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
+        int width = XAXIS / (biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
         int x = PADDING;
         FontMetrics fm = g.getFontMetrics();
-        for (BigDecimal i = xmin; i.compareTo(max) < 0; i = i.add(xstep)) {
-            g.drawLine(x, Y + PADDING, x, Y + PADDING + 20);
-            g.drawString(i.toString(), x - fm.stringWidth(i.toString()), Y + PADDING + 10 + fm.getMaxAscent());
+        final int line_length = 20;
+        for (BigDecimal i = xmin; i.compareTo(biggest_label) <= 0; i = i.add(xstep)) {
+            g.drawLine(x, YAXIS + PADDING, x, YAXIS + PADDING + line_length);
+            g.drawString(i.toString(), x - fm.stringWidth(i.toString()) / 2, YAXIS + PADDING + line_length + fm.getMaxAscent());
             x += width;
         }
     }
