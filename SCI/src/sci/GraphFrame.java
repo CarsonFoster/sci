@@ -23,26 +23,58 @@ public class GraphFrame extends JFrame {
     protected static GraphicsRunnable painter;
             
     protected static void drawHistogramBars(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
+        FontMetrics fm = g.getFontMetrics();
         // assuming auto is false
+        //(3.5) (2) (3) (5.6) (7)
         BigDecimal max = values.stream().max(Comparator.naturalOrder()).get();
         BigDecimal biggest_label = max.divideToIntegralValue(xstep).add(BigDecimal.ONE).multiply(xstep);
-        BigDecimal[] labels = new BigDecimal[(biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact()];
-        
+        int width = XAXIS / (biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
+        BigDecimal[] labels = new BigDecimal[(biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact() + 1];
         int index = 0;
         for (BigDecimal i = xmin; i.compareTo(biggest_label) <= 0; i = i.add(xstep)) {
             labels[index++] = i;
         }
         
         int[] heights = new int[labels.length - 1];
+        int maxHeight = 0;
         for (int i = 0; i < heights.length; i++) {
             for (BigDecimal v: values) {
                 if (v.compareTo(labels[i]) >= 0 && v.compareTo(labels[i + 1]) < 0) {
                     heights[i]++;
                 }
             }
-            System.out.println(heights[i]);
+            //System.out.println(heights[i]);
         }
-        System.out.println("----");
+        //System.out.println("----");
+        for (Integer x: heights) {
+            if (x > maxHeight) 
+                maxHeight = x;
+        }
+        
+        // determine the space between each scale and the actual number each scale mark increases by (coefficient)
+        int min_scale_padding = fm.getMaxAscent();
+        int scale_padding = YAXIS / maxHeight - LINE_WIDTH;
+        int coeff = 1;
+        while (scale_padding < min_scale_padding) {
+            coeff ++;
+            scale_padding = YAXIS / (maxHeight / coeff) - LINE_WIDTH;
+        }
+        //if (SCI.DEBUG) System.out.println(scale_padding + " " + coeff + " " + fm.getMaxAscent()); //15 5 13
+        
+        // drawing the scale lines and numbers
+        for (int j = 0; j <= Math.ceil(maxHeight / coeff) + 1; j++) {
+            g.drawLine(PADDING - SCALE_LENGTH, PADDING + YAXIS - j * scale_padding, PADDING, PADDING + YAXIS - j * scale_padding);
+            String num = Integer.toString(j * coeff);
+            g.drawString(num, PADDING - SCALE_LENGTH - fm.stringWidth(num), PADDING + YAXIS - j * scale_padding + fm.getAscent() / 2);
+        }
+        
+        Color[] colors = new Color[] {new Color(188, 83, 77), new Color(81, 126, 194), new Color(155, 187, 88), new Color(179, 119, 63)}; //kys
+        for (int i = 0; i < heights.length; i++) {
+            int count = heights[i];
+            int h = (int)((double)count / coeff * scale_padding);
+            drawRect(g, new Rectangle(PADDING + i * width, PADDING + YAXIS - h, width, h), colors[i % 4]);
+        }
+        
     }
     
     protected static void drawHistogramAxes(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
