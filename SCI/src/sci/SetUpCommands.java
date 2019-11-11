@@ -1374,5 +1374,56 @@ class SetUpGraphing {
                 frame.setVisible(true);
             }
         };
+        Command hist = new Command("graphing", "hist", "hist <list_name>", "Displays a histogram of the quantitative list <list_name>", new String[][] {new String[] {"list_name", "The name of the list to display the histogram of."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`hist` takes exactly one argument.");
+                    return;
+                }
+                StatList y = SCI.quantitative.get(Command.getArgs().get(0));
+                if (y == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                ArrayList<BigDecimal> values = new ArrayList<>();
+                y.forEach((Datum x) -> values.add(((QuantitativeDatum)x).getValue()));
+                
+                Scanner cin = new Scanner(System.in);
+                System.out.print("Title > ");
+                String title = cin.nextLine().trim();
+                System.out.print("Y-Axis Title > ");
+                String yaxis = cin.nextLine().trim();
+                System.out.print("X Minimum (enter = auto)> ");
+                String xminStr = cin.nextLine().trim();
+                BigDecimal xmin = null;
+                boolean xmin_auto = false;
+                if (xminStr.length() == 0) {
+                    xmin_auto = true;
+                } else {
+                    xmin = new BigDecimal(xminStr);
+                }
+                System.out.print("X Step (enter = auto)> ");
+                String xstepStr = cin.nextLine().trim();
+                BigDecimal xstep = null;
+                boolean xstep_auto = false;
+                if (xstepStr.length() == 0) {
+                    xstep_auto = true;
+                } else {
+                    xstep = new BigDecimal(xstepStr);
+                }
+                final BigDecimal xminf = xmin;
+                final boolean xmin_autof = xmin_auto;
+                final BigDecimal xstepf = xstep;
+                final boolean xstep_autof = xstep_auto;
+                GraphFrame.painter = (g) -> {
+                    GraphFrame.drawAxes(g, "", yaxis, title);
+                    GraphFrame.drawHistogramAxes(g, values, xminf, xmin_autof, xstepf, xstep_autof);
+                    GraphFrame.drawHistogramBars(g, values, xminf, xmin_autof, xstepf, xstep_autof);
+                };
+                frame.setVisible(false);
+                frame.setVisible(true);
+            }
+        };
     }
 }

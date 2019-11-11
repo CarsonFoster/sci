@@ -23,10 +23,23 @@ public class GraphFrame extends JFrame {
     protected static GraphicsRunnable painter;
             
     protected static void drawHistogramBars(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
-        FontMetrics fm = g.getFontMetrics();
-        // assuming auto is false
-        //(3.5) (2) (3) (5.6) (7)
         BigDecimal max = values.stream().max(Comparator.naturalOrder()).get();
+        BigDecimal min = values.stream().min(Comparator.naturalOrder()).get();
+        BigDecimal range = max.subtract(min);
+        // preference: 10 groups for auto
+        BigDecimal groups = (values.size() < 10) ? new BigDecimal(values.size() - 1) : BigDecimal.TEN;
+        if (xstep_auto) {
+            xstep = range.divideToIntegralValue(groups);
+        }
+        if (xmin_auto) {
+            if (xstep.compareTo(BigDecimal.ZERO) == 0)
+                xmin = min;
+            else
+                xmin = xstep.multiply(min.divide(xstep).setScale(NORMAL, RoundingMode.FLOOR));
+        }
+        
+        FontMetrics fm = g.getFontMetrics();
+        //(3.5) (2) (3) (5.6) (7)
         BigDecimal biggest_label = max.divideToIntegralValue(xstep).add(BigDecimal.ONE).multiply(xstep);
         int width = XAXIS / (biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
         BigDecimal[] labels = new BigDecimal[(biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact() + 1];
@@ -69,16 +82,32 @@ public class GraphFrame extends JFrame {
         }
         
         Color[] colors = new Color[] {new Color(188, 83, 77), new Color(81, 126, 194), new Color(155, 187, 88), new Color(179, 119, 63)}; //kys
+        int color = 0;
         for (int i = 0; i < heights.length; i++) {
             int count = heights[i];
             int h = (int)((double)count / coeff * scale_padding);
-            drawRect(g, new Rectangle(PADDING + i * width, PADDING + YAXIS - h, width, h), colors[i % 4]);
+            drawRect(g, new Rectangle(PADDING + i * width, PADDING + YAXIS - h, width, h), colors[color % 4]);
+            if (count != 0) color++;
         }
         
     }
     
     protected static void drawHistogramAxes(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
         BigDecimal max = values.stream().max(Comparator.naturalOrder()).get();
+        BigDecimal min = values.stream().min(Comparator.naturalOrder()).get();
+        BigDecimal range = max.subtract(min);
+        // preference: 10 groups for auto
+        BigDecimal groups = (values.size() < 10) ? new BigDecimal(values.size() - 1) : BigDecimal.TEN;
+        if (xstep_auto) {
+            xstep = range.divideToIntegralValue(groups);
+        }
+        if (xmin_auto) {
+            if (xstep.compareTo(BigDecimal.ZERO) == 0)
+                xmin = min;
+            else
+                xmin = xstep.multiply(min.divide(xstep).setScale(NORMAL, RoundingMode.FLOOR));
+        }
+        
         BigDecimal biggest_label = max.divideToIntegralValue(xstep).add(BigDecimal.ONE).multiply(xstep);
         // assuming auto is false, do later
         int width = XAXIS / (biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
