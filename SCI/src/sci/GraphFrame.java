@@ -21,7 +21,19 @@ public class GraphFrame extends JFrame {
     private final static int LINE_WIDTH = 1; // i think?
     
     protected static GraphicsRunnable painter;
+    protected static MathContext mc = new MathContext(6);
             
+    protected static void drawBoxplot(Graphics g, StatList values) {
+        BigDecimal min = ((QuantitativeDatum)values.get(0)).getValue();
+        BigDecimal q1 = ((QuantitativeDatum)values.get(1)).getValue();
+        BigDecimal median = ((QuantitativeDatum)values.get(2)).getValue();
+        BigDecimal q3 = ((QuantitativeDatum)values.get(3)).getValue();
+        BigDecimal max = ((QuantitativeDatum)values.get(4)).getValue();
+        
+        BigDecimal range = max.subtract(min);
+        int pixel = range.divideToIntegralValue(new BigDecimal(YAXIS)).pow(-1).intValueExact();
+    }
+    
     protected static void drawHistogramBars(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {
         BigDecimal max = values.stream().max(Comparator.naturalOrder()).get();
         BigDecimal min = values.stream().min(Comparator.naturalOrder()).get();
@@ -29,20 +41,20 @@ public class GraphFrame extends JFrame {
         // preference: 10 groups for auto
         BigDecimal groups = (values.size() < 10) ? new BigDecimal(values.size() - 1) : BigDecimal.TEN;
         if (xstep_auto) {
-            xstep = range.divideToIntegralValue(groups);
+            xstep = range.divide(groups, mc);
         }
         if (xmin_auto) {
             if (xstep.compareTo(BigDecimal.ZERO) == 0)
                 xmin = min;
             else
-                xmin = xstep.multiply(min.divide(xstep).setScale(NORMAL, RoundingMode.FLOOR));
+                xmin = xstep.multiply(min.divide(xstep, mc).setScale(NORMAL, RoundingMode.FLOOR));
         }
         
         FontMetrics fm = g.getFontMetrics();
         //(3.5) (2) (3) (5.6) (7)
         BigDecimal biggest_label = max.divideToIntegralValue(xstep).add(BigDecimal.ONE).multiply(xstep);
-        int width = XAXIS / (biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
-        BigDecimal[] labels = new BigDecimal[(biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact() + 1];
+        int width = XAXIS / (biggest_label.subtract(xmin).divide(xstep, mc).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
+        BigDecimal[] labels = new BigDecimal[(biggest_label.subtract(xmin).divide(xstep, mc).setScale(NORMAL, RoundingMode.CEILING)).intValueExact() + 1];
         int index = 0;
         for (BigDecimal i = xmin; i.compareTo(biggest_label) <= 0; i = i.add(xstep)) {
             labels[index++] = i;
@@ -99,18 +111,18 @@ public class GraphFrame extends JFrame {
         // preference: 10 groups for auto
         BigDecimal groups = (values.size() < 10) ? new BigDecimal(values.size() - 1) : BigDecimal.TEN;
         if (xstep_auto) {
-            xstep = range.divideToIntegralValue(groups);
+            xstep = range.divide(groups, mc);
         }
         if (xmin_auto) {
             if (xstep.compareTo(BigDecimal.ZERO) == 0)
                 xmin = min;
             else
-                xmin = xstep.multiply(min.divide(xstep).setScale(NORMAL, RoundingMode.FLOOR));
+                xmin = xstep.multiply(min.divide(xstep, mc).setScale(NORMAL, RoundingMode.FLOOR));
         }
         
         BigDecimal biggest_label = max.divideToIntegralValue(xstep).add(BigDecimal.ONE).multiply(xstep);
         // assuming auto is false, do later
-        int width = XAXIS / (biggest_label.subtract(xmin).divide(xstep).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
+        int width = XAXIS / (biggest_label.subtract(xmin).divide(xstep, mc).setScale(NORMAL, RoundingMode.CEILING)).intValueExact();
         int x = PADDING;
         FontMetrics fm = g.getFontMetrics();
         final int line_length = 20;
@@ -223,19 +235,15 @@ public class GraphFrame extends JFrame {
         g.setFont(original);
     }
     
-    protected static void drawAxes(Graphics g, String x, String y, String title) {
-        // padding | graph | padding
-        // (padding, padding) -> (padding, y-padding)
-        g.drawLine(PADDING, PADDING, PADDING, Y - PADDING);
+    protected static void drawXAxis(Graphics g, String x) {
         g.drawLine(PADDING, Y - PADDING, X - PADDING, Y - PADDING);
-        
-        Font original = g.getFont();
-        // (padding + (x - padding * 2) / 2)
-        int xLength = g.getFontMetrics().stringWidth(x), height = g.getFontMetrics().getMaxAscent();
+        int xLength = g.getFontMetrics().stringWidth(x);
         g.drawString(x, PADDING + XAXIS / 2 - xLength / 2, Y - g.getFontMetrics().getMaxDescent() - 5);
-        
-        drawTitle(g, title, original);
-        
+    }
+    
+    protected static void drawYAxis(Graphics g, String y, Font original) {
+        g.drawLine(PADDING, PADDING, PADDING, Y - PADDING);
+        int height = g.getFontMetrics().getMaxAscent();
         int yLength = g.getFontMetrics(original).stringWidth(y);
         AffineTransform at = new AffineTransform();
         at.rotate(Math.toRadians(-90), 0, 0);
@@ -243,6 +251,16 @@ public class GraphFrame extends JFrame {
         g.setFont(rotated);
         g.drawString(y, height, PADDING + (YAXIS / 2) + (yLength / 2));
         g.setFont(original);
+    }
+    protected static void drawAxes(Graphics g, String x, String y, String title) {
+        // padding | graph | padding
+        // (padding, padding) -> (padding, y-padding)        
+        Font original = g.getFont();
+        // (padding + (x - padding * 2) / 2)
+        
+        drawXAxis(g, x);
+        drawYAxis(g, y, original);
+        drawTitle(g, title, original);
     }
     
     class SciPanel extends JPanel {

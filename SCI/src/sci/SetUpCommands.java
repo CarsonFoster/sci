@@ -1425,5 +1425,36 @@ class SetUpGraphing {
                 frame.setVisible(true);
             }
         };
+        
+        Command box = new Command("graphing", "box", "box <list_name>", "Displays a boxplot of the quantitative list list_name.", new String[][] {new String[] {"list_name", "The name of the quantitative list to draw the boxplot from."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 1) {
+                    SCI.error("`box` takes exactly one argument.");
+                    return;
+                }
+                String list = Command.getArgs().get(0);
+                StatList y = SCI.quantitative.get(list);
+                if (y == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                Scanner cin = new Scanner(System.in);
+                System.out.print("Title > ");
+                String title = cin.nextLine().trim();
+                
+                SCI.putArgs(("suppress fivenum " + list).split(" "));
+                SCI.commands.get("ober").get("suppress").run();
+                StatList x = SCI.res.getList();
+                
+                GraphFrame.painter = (g) -> {
+                    Font original = g.getFont();
+                    GraphFrame.drawTitle(g, title, original);
+                    GraphFrame.drawYAxis(g, "", original);
+                };
+                frame.setVisible(false);
+                frame.setVisible(true);
+            }
+        };
     }
 }
