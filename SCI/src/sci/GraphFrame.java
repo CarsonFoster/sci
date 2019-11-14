@@ -21,9 +21,10 @@ public class GraphFrame extends JFrame {
     private final static int LINE_WIDTH = 1; // i think?
     
     protected static GraphicsRunnable painter;
-    protected static MathContext mc = new MathContext(6);
+    protected static MathContext mc = new MathContext(8);
             
     protected static void drawBoxplot(Graphics g, StatList values) {
+        FontMetrics fm = g.getFontMetrics();
         BigDecimal min = ((QuantitativeDatum)values.get(0)).getValue();
         BigDecimal q1 = ((QuantitativeDatum)values.get(1)).getValue();
         BigDecimal median = ((QuantitativeDatum)values.get(2)).getValue();
@@ -31,7 +32,34 @@ public class GraphFrame extends JFrame {
         BigDecimal max = ((QuantitativeDatum)values.get(4)).getValue();
         
         BigDecimal range = max.subtract(min);
-        int pixel = range.divideToIntegralValue(new BigDecimal(YAXIS)).pow(-1).intValueExact();
+        BigDecimal half = range.divide(new BigDecimal(2), mc);
+        range = range.add(half);
+        BigDecimal graph_min = min.subtract(half.divide(new BigDecimal(2), mc));
+        //int pixel = new BigDecimal(XAXIS).divide(range, mc).setScale(NORMAL, RoundingMode.UP).intValueExact();
+        BigDecimal px;
+        if (range.compareTo(BigDecimal.ZERO) != 0) 
+            px = new BigDecimal(XAXIS).divide(range, mc);//new BigDecimal(pixel);
+        else
+            px = new BigDecimal(XAXIS).divide(new BigDecimal(2), mc);
+        
+        final int LINE_HEIGHT_HALF = 20, SCALE_HEIGHT = 10;
+        
+        int[] xs = new int[5];
+        int middle = PADDING + (YAXIS / 2);
+        
+        for (int i = 0; i < values.size(); i++) {
+            BigDecimal num = ((QuantitativeDatum)values.get(i)).getValue();
+            int x = PADDING + num.subtract(graph_min).multiply(px).setScale(NORMAL, RoundingMode.DOWN).intValueExact();
+            xs[i] = x;
+            g.drawLine(x, middle - LINE_HEIGHT_HALF, x, middle + LINE_HEIGHT_HALF);
+            g.drawLine(x, PADDING + YAXIS, x, PADDING + YAXIS + SCALE_HEIGHT);
+            g.drawString(num.toString(), x - fm.stringWidth(num.toString()) / 2, PADDING + YAXIS + SCALE_HEIGHT + fm.getMaxAscent());
+        }
+        g.drawLine(xs[0], middle, xs[1], middle); // min to q1
+        g.drawLine(xs[3], middle, xs[4], middle); // q3 to max
+        g.drawLine(xs[1], middle - LINE_HEIGHT_HALF, xs[3], middle - LINE_HEIGHT_HALF); // q1 to q3 : top
+        g.drawLine(xs[1], middle + LINE_HEIGHT_HALF, xs[3], middle + LINE_HEIGHT_HALF); // q1 to q3 : bottom
+
     }
     
     protected static void drawHistogramBars(Graphics g, ArrayList<BigDecimal> values, BigDecimal xmin, boolean xmin_auto, BigDecimal xstep, boolean xstep_auto) {

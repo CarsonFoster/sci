@@ -1443,14 +1443,21 @@ class SetUpGraphing {
                 System.out.print("Title > ");
                 String title = cin.nextLine().trim();
                 
-                SCI.putArgs(("suppress fivenum " + list).split(" "));
-                SCI.commands.get("ober").get("suppress").run();
+                SCI.putArgs(("fivenum " + list).split(" "));
+                SCI.console = false;
+                if (!SetUpCommands.modules.contains("analysis")) {
+                    SetUpCommands.modules += "_analysis_";
+                    SetUpAnalysis.main();
+                }
+                SCI.commands.get("analysis").get("fivenum").run();
                 StatList x = SCI.res.getList();
+                SCI.console = true;
                 
                 GraphFrame.painter = (g) -> {
                     Font original = g.getFont();
                     GraphFrame.drawTitle(g, title, original);
-                    GraphFrame.drawYAxis(g, "", original);
+                    GraphFrame.drawXAxis(g, "");
+                    GraphFrame.drawBoxplot(g, x);
                 };
                 frame.setVisible(false);
                 frame.setVisible(true);
