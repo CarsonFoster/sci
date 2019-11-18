@@ -1,7 +1,12 @@
 package sci;
 
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -9,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class GraphFrame extends JFrame {
@@ -22,6 +27,23 @@ public class GraphFrame extends JFrame {
     
     protected static GraphicsRunnable painter;
     protected static MathContext mc = new MathContext(8);
+    
+    protected SciPanel panel;
+    
+    protected boolean saveImage(String path) {
+        Point xy = getGlassPane().getLocation();
+        BufferedImage out = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics g = out.getGraphics();
+        panel.paint(g);
+        try {
+            ImageIO.write(out, "jpeg", new File(path));
+            System.out.println("test");
+        } catch (Exception e) {
+            SCI.error("could not write image to specified file \"" + path + "\".");
+            return false;
+        }
+        return true;
+    }
             
     protected static void drawBoxplot(Graphics g, StatList values) {
         FontMetrics fm = g.getFontMetrics();
@@ -313,7 +335,8 @@ public class GraphFrame extends JFrame {
         //setPreferredSize(new Dimension(X, Y));
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setLocationRelativeTo(null);
-        add(new SciPanel());
+        panel = new SciPanel();
+        add(panel);
         pack();
         setVisible(false);
     }

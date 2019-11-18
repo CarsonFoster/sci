@@ -1426,7 +1426,7 @@ class SetUpGraphing {
             }
         };
         
-        Command box = new Command("graphing", "box", "box <list_name>", "Displays a boxplot of the quantitative list list_name.", new String[][] {new String[] {"list_name", "The name of the quantitative list to draw the boxplot from."}}) {
+        Command box = new Command("graphing", "box", "box <list_name>", "Displays a boxplot of the quantitative list <list_name>.", new String[][] {new String[] {"list_name", "The name of the quantitative list to draw the boxplot from."}}) {
             protected void run() {
                 if (Command.getArgs().size() != 1) {
                     SCI.error("`box` takes exactly one argument.");
@@ -1461,6 +1461,71 @@ class SetUpGraphing {
                 };
                 frame.setVisible(false);
                 frame.setVisible(true);
+            }
+        };
+        Command boxC = new Command("graphing", "\\box", "\\box <list_name> <index>", "Displays a boxplot of the quantitative values specified by <index> from categorical list <list_name>.", "Indices start at one.", new String[][] {new String[] {"list_name", "The name of the quantitative list to draw the boxplot from."}, new String[] {"index", "The index of the quantitative values in the categorical unit."}}) {
+            protected void run() {
+                if (Command.getArgs().size() != 2) {
+                    SCI.error("`\\box` takes exactly two arguments.");
+                    return;
+                }
+                String list = Command.getArgs().get(0);
+                StatList y = SCI.quantitative.get(list);
+                if (y == null) {
+                    SCI.error("List \"" + Command.getArgs().get(0) + "\" does not exist.");
+                    return;
+                }
+                
+                int index;
+                try {
+                    index = Integer.parseInt(Command.getArgs().get(1)) - 1;
+                    ((CategoricalUnit)y.get(0)).getQuantValue(index);
+                } catch (Exception e) {
+                    SCI.error("Index \"" + Command.getArgs().get(1) + "\" is invalid.");
+                    return;
+                }
+                
+                Scanner cin = new Scanner(System.in);
+                System.out.print("Title > ");
+                String title = cin.nextLine().trim();
+                
+                SCI.putArgs(("fivenum " + list + " " + (index + 1)).split(" "));
+                SCI.console = false;
+                if (!SetUpCommands.modules.contains("analysis")) {
+                    SetUpCommands.modules += "_analysis_";
+                    SetUpAnalysis.main();
+                }
+                SCI.commands.get("analysis").get("\\fivenum").run();
+                StatList x = SCI.res.getList();
+                SCI.console = true;
+                
+                GraphFrame.painter = (g) -> {
+                    Font original = g.getFont();
+                    GraphFrame.drawTitle(g, title, original);
+                    GraphFrame.drawXAxis(g, "");
+                    GraphFrame.drawBoxplot(g, x);
+                };
+                frame.setVisible(false);
+                frame.setVisible(true);
+            }
+        };
+        Command save = new Command("graphing", "save", "save <path> <graph_command>", "Saves the graph created by <graph_command> to the file at <path>.", "The output file will be in the jpeg format.", new String[][] {new String[] {"path", "The path representing the file to save the image to."}, new String[] {"graph_command", "The command used to generate the graph to save."}}) {
+            protected void run() {
+                if (Command.getArgs().size() < 2) {
+                    SCI.error("`save` takes greater than or equal to two arguments.");
+                    return;
+                }
+                String path = Command.getArgs().get(0);
+                String[] graph_command = new String[Command.getArgs().size()];
+                for (int i = 1; i < Command.getArgs().size(); i++) {
+                    graph_command[i] = Command.getArgs().get(i);
+                }
+                graph_command[0] = "suppress";
+                SCI.putArgs(graph_command);
+                SCI.commands.get("ober").get("suppress").run();
+                if(frame.saveImage(path) && SCI.console) {
+                    System.out.println("Image saved succesfully.");
+                }
             }
         };
     }
