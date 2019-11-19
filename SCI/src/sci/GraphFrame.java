@@ -6,6 +6,7 @@ import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -36,8 +37,13 @@ public class GraphFrame extends JFrame {
         Graphics g = out.getGraphics();
         panel.paint(g);
         try {
+            FileOutputStream f = new FileOutputStream(path); // checks to see if specified file can be created
+        } catch (Exception e) {
+            SCI.error("could not write image to specified file \"" + path + "\".");
+            return false;
+        }
+        try {
             ImageIO.write(out, "jpeg", new File(path));
-            System.out.println("test");
         } catch (Exception e) {
             SCI.error("could not write image to specified file \"" + path + "\".");
             return false;
