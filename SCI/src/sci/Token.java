@@ -16,4 +16,8 @@ public class Token {
     public String getContents() {
         return contents;
     }
+    
+    public String toString() {
+        return "<" + t + "> " + contents;
+    }
 }

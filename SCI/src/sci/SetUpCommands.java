@@ -197,22 +197,27 @@ public class SetUpCommands {
 
 class SetUpData {
     public static void main() {
-        Command addQuantitative = new Command("data", "add", "add <list_name>", "Prompts for quantitative data (each separated by a space) and enters it into <list_name>.",
+        Command addQuantitative = new Command("data", "add", "add <list_name>", "Prompts for quantitative data (each separated by a space) and enters it into <list_name>.", "The list name can be composed only of letters and underscores.",
                 new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
                    protected void run() {
                        if (Command.getArgs().size() != 1) {
                            SCI.error("`add` takes exactly one argument.");
                            return;
                        }
-                       if (!StatList.checkListName(Command.getArgs().get(0))) {
-                           SCI.error("List name \"" + Command.getArgs().get(0) + "\" is already in use.");
+                       String list = Command.getArgs().get(0);
+                       if (!StatList.checkListName(list)) {
+                           SCI.error("List name \"" + list + "\" is already in use.");
+                           return;
+                       }
+                       if (!list.matches("[a-zA-Z_]+")) {
+                           SCI.error("List name \"" + list + "\" is not a valid list name.");
                            return;
                        }
                        System.out.print("> ");
                        String line = SCI.cin.nextLine();
                        StatList nums = StatList.parseQuantitative(line);
                        if (nums == null) return;
-                       SCI.quantitative.put(Command.getArgs().get(0), nums);
+                       SCI.quantitative.put(list, nums);
                        if (SCI.DEBUG) {
                            StatList got = SCI.quantitative.get(Command.getArgs().get(0));
                            System.out.println(got);
@@ -220,16 +225,20 @@ class SetUpData {
                        SCI.res = null;
                    }
                 };
-            Command importQuantitative = new Command("data", "import", "import <path> <list_name>", "Opens the file at <path> and puts the quantitative data there into <list_name>.",
+            Command importQuantitative = new Command("data", "import", "import <path> <list_name>", "Opens the file at <path> and puts the quantitative data there into <list_name>.", "The list name can be composed only of letters and underscores.",
                 new String[][] {new String[] {"path", "Path to the file containing the quantitative data."}, new String[] {"list_name", "List to enter the data into."}}) {
                   protected void run() {
                       if (Command.getArgs().size() != 2) {
                           SCI.error("`import` takes exactly two arguments.");
                           return;
                       }
-
-                      if (!StatList.checkListName(Command.getArgs().get(1))) {
-                           SCI.error("List name \"" + Command.getArgs().get(1) + "\" is already in use.");
+                      String list = Command.getArgs().get(1);
+                      if (!StatList.checkListName(list)) {
+                           SCI.error("List name \"" + list + "\" is already in use.");
+                           return;
+                       }
+                      if (!list.matches("[a-zA-Z_]+")) {
+                           SCI.error("List name \"" + list + "\" is not a valid list name.");
                            return;
                        }
 
@@ -247,49 +256,57 @@ class SetUpData {
                       }
                       line = line.replaceAll(",", " ");
                       StatList data = StatList.parseQuantitative(line.substring(0, line.length() - 1));
-                      SCI.quantitative.put(Command.getArgs().get(1), data);
+                      SCI.quantitative.put(list, data);
                       if (SCI.DEBUG) {
-                           StatList got = SCI.quantitative.get(Command.getArgs().get(1));
+                           StatList got = SCI.quantitative.get(list);
                            System.out.println(got);
                        }
                       SCI.res = null;
                   }  
                 };
 
-            Command addCategorical = new Command("data", "\\add", "\\add <list_name>", "Prompts for categorical data and enters it into <list_name>.", "Each categorical datum must be in the form (a b c .. n)",
+            Command addCategorical = new Command("data", "\\add", "\\add <list_name>", "Prompts for categorical data and enters it into <list_name>.", "The list name can be composed only of letters and underscores.\nEach categorical datum must be in the form (a b c .. n)",
                 new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
                    protected void run() {
                        if (Command.getArgs().size() != 1) {
                            SCI.error("`\\add` takes exactly one argument.");
                            return;
                        }
-
-                       if (!StatList.checkListName(Command.getArgs().get(0))) {
-                           SCI.error("List name \"" + Command.getArgs().get(0) + "\" is already in use.");
+                       String list = Command.getArgs().get(0);
+                       if (!StatList.checkListName(list)) {
+                           SCI.error("List name \"" + list + "\" is already in use.");
+                           return;
+                       }
+                       if (!list.matches("[a-zA-Z_]+")) {
+                           SCI.error("List name \"" + list + "\" is not a valid list name.");
                            return;
                        }
 
                        System.out.print("> ");
                        String line = SCI.cin.nextLine();
                        StatList cat = StatList.parseCategorical(line);
-                       SCI.categorical.put(Command.getArgs().get(0), cat);
+                       SCI.categorical.put(list, cat);
                        if (SCI.DEBUG) {
-                           StatList got = SCI.categorical.get(Command.getArgs().get(0));
+                           StatList got = SCI.categorical.get(list);
                            System.out.println(got);
                        }
                        SCI.res = null;
                    }
                 };
-            Command importCategorical = new Command("data", "\\import", "\\import <path> <list_name>", "Opens the file at <path> and puts the categorical data there into <list_name>.", "Each categorical datum must be in the form (a b c .. n)",
+            Command importCategorical = new Command("data", "\\import", "\\import <path> <list_name>", "Opens the file at <path> and puts the categorical data there into <list_name>.", "The list name can be composed only of letters and underscores.\nEach categorical datum must be in the form (a b c .. n)",
                 new String[][] {new String[] {"path", "Path to the file containing the categorical data."}, new String[] {"list_name", "List to enter the data into."}}) {
                   protected void run() {
                       if (Command.getArgs().size() != 2) {
                           SCI.error("`\\import` takes exactly two arguments.");
                           return;
                       }
-
-                      if (!StatList.checkListName(Command.getArgs().get(1))) {
-                           SCI.error("List name \"" + Command.getArgs().get(1) + "\" is already in use.");
+                      String list = Command.getArgs().get(1);
+                      if (!StatList.checkListName(list)) {
+                           SCI.error("List name \"" + list + "\" is already in use.");
+                           return;
+                       }
+                      if (!list.matches("[a-zA-Z_]+")) {
+                           SCI.error("List name \"" + list + "\" is not a valid list name.");
                            return;
                        }
 
@@ -306,9 +323,9 @@ class SetUpData {
                           line += fin.nextLine().trim() + " ";
                       }
                       StatList data = StatList.parseCategorical(line.substring(0, line.length() - 1));
-                      SCI.categorical.put(Command.getArgs().get(1), data);
+                      SCI.categorical.put(list, data);
                       if (SCI.DEBUG) {
-                           StatList got = SCI.categorical.get(Command.getArgs().get(1));
+                           StatList got = SCI.categorical.get(list);
                            System.out.println(got);
                       }
                       SCI.res = null;

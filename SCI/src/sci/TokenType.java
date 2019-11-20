@@ -1,9 +1,12 @@
 package sci;
 
 public enum TokenType {
-    INTEGER("[0-9]+(?!\\.)"),
     DECIMAL("[0-9]+\\.[0-9]+"),
-    BINARYOP("[\\+/\\*\\-\\^%]");
+    INTEGER("[0-9]+(?!\\.)"),
+    BINARYOP("[\\+/\\*\\-\\^%]"),
+    UNARYOP("\\-"),
+    PAREN("[\\(\\)]"),
+    STRING("[a-zA-Z_]+");
     //WHITESPACE("[ \t]");
     
     public String pattern;
