@@ -197,7 +197,7 @@ public class SetUpCommands {
 
 class SetUpData {
     public static void main() {
-        Command addQuantitative = new Command("data", "add", "add <list_name>", "Prompts for quantitative data (each separated by a space) and enters it into <list_name>.", "The list name can be composed only of letters and underscores.",
+        Command addQuantitative = new Command("data", "add", "add <list_name>", "Prompts for quantitative data (each separated by a space) and enters it into <list_name>.", "The list name can be composed only of letters, numbers, and underscores. It cannot start with a number.",
                 new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
                    protected void run() {
                        if (Command.getArgs().size() != 1) {
@@ -209,7 +209,7 @@ class SetUpData {
                            SCI.error("List name \"" + list + "\" is already in use.");
                            return;
                        }
-                       if (!list.matches("[a-zA-Z_]+")) {
+                       if (!list.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
                            SCI.error("List name \"" + list + "\" is not a valid list name.");
                            return;
                        }
@@ -225,7 +225,7 @@ class SetUpData {
                        SCI.res = null;
                    }
                 };
-            Command importQuantitative = new Command("data", "import", "import <path> <list_name>", "Opens the file at <path> and puts the quantitative data there into <list_name>.", "The list name can be composed only of letters and underscores.",
+            Command importQuantitative = new Command("data", "import", "import <path> <list_name>", "Opens the file at <path> and puts the quantitative data there into <list_name>.", "The list name can be composed only of letters, numbers, and underscores. It cannot start with a number.",
                 new String[][] {new String[] {"path", "Path to the file containing the quantitative data."}, new String[] {"list_name", "List to enter the data into."}}) {
                   protected void run() {
                       if (Command.getArgs().size() != 2) {
@@ -237,7 +237,7 @@ class SetUpData {
                            SCI.error("List name \"" + list + "\" is already in use.");
                            return;
                        }
-                      if (!list.matches("[a-zA-Z_]+")) {
+                      if (!list.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
                            SCI.error("List name \"" + list + "\" is not a valid list name.");
                            return;
                        }
@@ -265,7 +265,7 @@ class SetUpData {
                   }  
                 };
 
-            Command addCategorical = new Command("data", "\\add", "\\add <list_name>", "Prompts for categorical data and enters it into <list_name>.", "The list name can be composed only of letters and underscores.\nEach categorical datum must be in the form (a b c .. n)",
+            Command addCategorical = new Command("data", "\\add", "\\add <list_name>", "Prompts for categorical data and enters it into <list_name>.", "The list name can be composed only of letters, numbers, and underscores. It cannot start with a number.\nEach categorical datum must be in the form (a b c .. n)",
                 new String[][] {new String[] {"list_name", "List to enter the data into."}}) {
                    protected void run() {
                        if (Command.getArgs().size() != 1) {
@@ -277,7 +277,7 @@ class SetUpData {
                            SCI.error("List name \"" + list + "\" is already in use.");
                            return;
                        }
-                       if (!list.matches("[a-zA-Z_]+")) {
+                       if (!list.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
                            SCI.error("List name \"" + list + "\" is not a valid list name.");
                            return;
                        }
@@ -293,7 +293,7 @@ class SetUpData {
                        SCI.res = null;
                    }
                 };
-            Command importCategorical = new Command("data", "\\import", "\\import <path> <list_name>", "Opens the file at <path> and puts the categorical data there into <list_name>.", "The list name can be composed only of letters and underscores.\nEach categorical datum must be in the form (a b c .. n)",
+            Command importCategorical = new Command("data", "\\import", "\\import <path> <list_name>", "Opens the file at <path> and puts the categorical data there into <list_name>.", "The list name can be composed only of letters, numbers, and underscores. It cannot start with a number.\nEach categorical datum must be in the form (a b c .. n)",
                 new String[][] {new String[] {"path", "Path to the file containing the categorical data."}, new String[] {"list_name", "List to enter the data into."}}) {
                   protected void run() {
                       if (Command.getArgs().size() != 2) {
@@ -305,7 +305,7 @@ class SetUpData {
                            SCI.error("List name \"" + list + "\" is already in use.");
                            return;
                        }
-                      if (!list.matches("[a-zA-Z_]+")) {
+                      if (!list.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
                            SCI.error("List name \"" + list + "\" is not a valid list name.");
                            return;
                        }

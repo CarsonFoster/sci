@@ -1,12 +1,15 @@
 package sci;
 
 public enum TokenType {
-    DECIMAL("[0-9]+\\.[0-9]+"),
-    INTEGER("[0-9]+(?!\\.)"),
+    // order doesn't matter
     BINARYOP("[\\+/\\*\\-\\^%]"),
     UNARYOP("\\-"),
-    PAREN("[\\(\\)]"),
-    STRING("[a-zA-Z_]+");
+    LPAREN("\\("),
+    RPAREN("\\)"),
+    // order does matter, assume decimal before string and then string before integer
+    DECIMAL("[0-9]+\\.[0-9]+"),
+    STRING("[a-zA-Z_][a-zA-Z0-9_]*"),
+    INTEGER("[0-9]+(?!\\.)");
     //WHITESPACE("[ \t]");
     
     public String pattern;

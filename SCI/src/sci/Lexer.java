@@ -29,7 +29,6 @@ public class Lexer {
                 String matched = m.group(tt.toString());
                 if (matched != null) {
                     tokens.add(new Token(tt, matched));
-                    continue;
                 }
             }
         }
@@ -39,7 +38,7 @@ public class Lexer {
     
     public static void main(String args[]) {
         //String input = "3.5 + 2 - 3.4 * 0 / 2.0";
-        String input = "3*4 + usigma list1"; //TODO: make sure to include numbers in list names.
+        String input = "3^     (4 + usigma list1)"; //TODO: make sure to include numbers in list names.
         
         System.out.println(lex(input));
     }
