@@ -1,4 +1,4 @@
-package sci;
+package sci.parsing;
 
 public class Token {
     private TokenType t;
