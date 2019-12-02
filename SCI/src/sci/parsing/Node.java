@@ -1,6 +1,6 @@
 package sci.parsing;
 
-class Node {
+public class Node {
     private Token t;
     private Node left, right;
     
@@ -29,7 +29,7 @@ class Node {
     }
 }
 
-public class AST {
+/*public class AST {
     private Node root;
     
     public AST(Node r) {
@@ -44,4 +44,4 @@ public class AST {
     public Node getRoot() {
         return root;
     }
-}
+}*/
