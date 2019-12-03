@@ -11,6 +11,18 @@ decimal = [0-9]+\.[0-9]+
 command = [STRING, number]+
 */
 
+
+// Operators: (BI) +-*/%^ (U)-
+// Precedence: Paren;-(u);^;*/%;+-
+
+/* Grammar 2.0
+unit = number | unary number | command
+factor = unit | lparen expression rparen
+exponent_group = factor | factor ^ exponent_group
+term = exponent_group | term [/%*] exponent_group
+expression = term | expression [+-] term
+*/
+
 public class Parser {
     private List<Token> tokens;
     private int index = 0;
@@ -31,12 +43,15 @@ public class Parser {
         Node number = parseNumber();
         if (number != null)
             return number;
+        Node command = parseCommand();
+        if (command != null)
+            return command;
         Node lparen = parseType(TokenType.LPAREN);
         if (lparen != null) {
             Node expr = parseExpression();
             if (expr == null) throw new SyntaxException("Expression expected.");
             Node rparen = parseType(TokenType.RPAREN);
-            if (rparen == null) throw new SyntaxException("Right parenthese expected.");
+            if (rparen == null) throw new SyntaxException("Right parenthesis expected.");
             //TODO
         }
         return null;
@@ -47,7 +62,8 @@ public class Parser {
         ArrayList<Node> list = new ArrayList<>();
         do {
             lastParsed = parseStringOrNumber();
-            list.add(lastParsed);
+            if (lastParsed != null)
+                list.add(lastParsed);
         } while (lastParsed != null);
         if (list.isEmpty())
             return null;
