@@ -16,16 +16,45 @@ command = [STRING, number]+
 // Precedence: Paren;-(u);^;*/%;+-
 
 /* Grammar 2.0
-unit = number | unary number | command
-factor = unit | lparen expression rparen
+unit = number | command
+unary_group = unit | unary number | unary lparen expression rparen
+factor = unary_group | lparen expression rparen
 exponent_group = factor | factor ^ exponent_group
 term = exponent_group | term [/%*] exponent_group
 expression = term | expression [+-] term
 */
 
+/*
+replace + and – with ))+(( and ))-((, respectively;
+replace * and / with )*( and )/(, respectively;
+add (( at the beginning of each expression and after each left parenthesis in the original expression; and
+add )) at the end of the expression and before each right parenthesis in the original expression.
+*/
+
+// 3 + 4 * 6
+    // 3))+((4*6
+    // 3))+((4)*(6
+    // ((3))+((4)*(6))
+// (3 + 4) * 6
+    // (3))+((4)*6
+    // (3))+((4))*(6
+    // (((((3))+((4))*(6
+    // (((((3))+((4))))*(6))
+
+
 public class Parser {
     private List<Token> tokens;
     private int index = 0;
+    
+    /*
+    public static void main(String[] args) {
+        String test = "(3+4)*6";
+        ArrayList<Token> start = Lexer.lex(test);
+        start.forEach(x -> System.out.print(x.getContents()));
+        System.out.println("");
+        ArrayList<Token> end = parenthesize(start);
+        end.forEach(x -> System.out.print(x.getContents()));
+    }*/
     
     public Parser(List<Token> t) {
         tokens = t;
@@ -39,21 +68,61 @@ public class Parser {
         return false;
     }
     
-    public Node parseExpression() throws SyntaxException {
-        Node number = parseNumber();
-        if (number != null)
-            return number;
-        Node command = parseCommand();
-        if (command != null)
-            return command;
-        Node lparen = parseType(TokenType.LPAREN);
-        if (lparen != null) {
-            Node expr = parseExpression();
-            if (expr == null) throw new SyntaxException("Expression expected.");
-            Node rparen = parseType(TokenType.RPAREN);
-            if (rparen == null) throw new SyntaxException("Right parenthesis expected.");
-            //TODO
+    private boolean safeTest(String content, int i) {
+        return (tokens.size() > index + i && tokens.get(index + i).getContents().equals(content));
+    }
+    
+    private boolean safeTest(TokenType tt, int i) {
+        return (tokens.size() > index + i && tokens.get(index + i).getType() == tt);
+    }
+    
+    private void addParen(List<Token> t, int n, boolean left) {
+        for (int i = 0; i < n; i++)
+            t.add(new Token(left ? TokenType.LPAREN : TokenType.RPAREN, left ? "(" : ")"));
+    }
+    
+    private ArrayList<Token> parenthesize() {
+        ArrayList<Token> ret = new ArrayList<>();
+        addParen(ret, 4, true);
+        
+        for (int i = 0; i < tokens.size(); i++) {
+            TokenType tt = tokens.get(i).getType();
+            String content = tokens.get(i).getContents();
+            if (tt == TokenType.LPAREN)
+                addParen(ret, 4, true);
+            else if (tt == TokenType.RPAREN)
+                addParen(ret, 4, false);
+            else if (tt == TokenType.BINARYOP) {
+                if (content.equals("^")) {
+                    addParen(ret, 1, false);
+                    ret.add(tokens.get(i));
+                    addParen(ret, 1, true);
+                } else if ("*/%".contains(content)) {
+                    addParen(ret, 2, false);
+                    ret.add(tokens.get(i));
+                    addParen(ret, 2, true);
+                } else if ("+-".contains(content)) {
+                    addParen(ret, 3, false);
+                    ret.add(tokens.get(i));
+                    addParen(ret, 3, true);
+                }
+            } else {
+                ret.add(tokens.get(i));
+            }
         }
+        
+        addParen(ret, 4, false);
+        
+        return ret;
+    }
+    
+    public Node parseExpression() throws SyntaxException {
+        return null;
+    }
+    
+    public Node parseParentheticalExpression() {
+        if (safeTest(TokenType.BINARYOP, 1))
+            ;
         return null;
     }
     
