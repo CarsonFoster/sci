@@ -52,8 +52,11 @@ public class Parser {
         ArrayList<Token> start = Lexer.lex(test);
         start.forEach(x -> System.out.print(x.getContents()));
         System.out.println("");
-        ArrayList<Token> end = parenthesize(start);
+        tokens = start;
+        ArrayList<Token> end = parenthesize();
         end.forEach(x -> System.out.print(x.getContents()));
+        //3 + 4 * 6: ((((3)))+(((4))*((6))))
+        //(3 + 4) * 6: ((((((((3)))+(((4))))))*((6))))
     }*/
     
     public Parser(List<Token> t) {
@@ -120,9 +123,37 @@ public class Parser {
         return null;
     }
     
-    public Node parseParentheticalExpression() {
-        if (safeTest(TokenType.BINARYOP, 1))
-            ;
+    private Node parseParentheticalExpression(int start, int end) { // inclusive, exclusive, including parentheses: (, (, 1, ), +, (, 2, ), ) referring to (1) would be 1, 4
+        int lcount = 0, rcount = 0, lstart = -1, rend = -1;
+        for (int i = start + 1; i < end - 1; i++) { // disregarding outer parens
+            Token u = tokens.get(i);
+            TokenType tt = u.getType();
+            String content = u.getContents();
+            
+            Node left = null, middle = null, right = null;
+            if (tt == TokenType.LPAREN) {
+                lcount++;
+                if (lcount == 1) lstart = i;
+            } else if (tt == TokenType.RPAREN) {
+                rcount++;
+                if (rcount == lcount) {
+                    rend = i;
+                    Node temp = parseParentheticalExpression(lstart, rend);
+                    if (left == null)
+                        left = temp;
+                    else if (middle == null)
+                        middle = temp;
+                    else
+                        right = temp;
+                    lcount = 0;
+                    rcount = 0;
+                    lstart = -1;
+                    rend = -1;
+                }
+            } else if (lcount == 0) {
+                
+            }
+        }
         return null;
     }
     
