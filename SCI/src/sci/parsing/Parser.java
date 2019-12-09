@@ -41,23 +41,25 @@ add )) at the end of the expression and before each right parenthesis in the ori
     // (((((3))+((4))*(6
     // (((((3))+((4))))*(6))
 
-
 public class Parser {
-    private List<Token> tokens;
+    private static List<Token> tokens;
     private int index = 0;
     
-    /*
+    
     public static void main(String[] args) {
-        String test = "(3+4)*6";
+        String test = "((3))";
         ArrayList<Token> start = Lexer.lex(test);
-        start.forEach(x -> System.out.print(x.getContents()));
-        System.out.println("");
         tokens = start;
-        ArrayList<Token> end = parenthesize();
-        end.forEach(x -> System.out.print(x.getContents()));
+        //ArrayList<Token> end = parenthesize();
+        //System.out.println(end);
+        //tokens = end;
+        Node res = parseParentheticalExpression(0, 5);
+        System.out.println(res.getToken().getContents());
+        System.out.println(res.getLeft());
+        System.out.println(res.getRight());
         //3 + 4 * 6: ((((3)))+(((4))*((6))))
         //(3 + 4) * 6: ((((((((3)))+(((4))))))*((6))))
-    }*/
+    }
     
     public Parser(List<Token> t) {
         tokens = t;
@@ -79,12 +81,12 @@ public class Parser {
         return (tokens.size() > index + i && tokens.get(index + i).getType() == tt);
     }
     
-    private void addParen(List<Token> t, int n, boolean left) {
+    private static void addParen(List<Token> t, int n, boolean left) {
         for (int i = 0; i < n; i++)
             t.add(new Token(left ? TokenType.LPAREN : TokenType.RPAREN, left ? "(" : ")"));
     }
     
-    private ArrayList<Token> parenthesize() {
+    private static ArrayList<Token> parenthesize() {
         ArrayList<Token> ret = new ArrayList<>();
         addParen(ret, 4, true);
         
@@ -123,14 +125,15 @@ public class Parser {
         return null;
     }
     
-    private Node parseParentheticalExpression(int start, int end) { // inclusive, exclusive, including parentheses: (, (, 1, ), +, (, 2, ), ) referring to (1) would be 1, 4
+    private static Node parseParentheticalExpression(int start, int end) { // inclusive, exclusive, including parentheses: (, (, 1, ), +, (, 2, ), ) referring to (1) would be 1, 4
         int lcount = 0, rcount = 0, lstart = -1, rend = -1;
+        Node left = null, middle = null, right = null;
+        boolean right_defer = false;
         for (int i = start + 1; i < end - 1; i++) { // disregarding outer parens
             Token u = tokens.get(i);
             TokenType tt = u.getType();
             String content = u.getContents();
             
-            Node left = null, middle = null, right = null;
             if (tt == TokenType.LPAREN) {
                 lcount++;
                 if (lcount == 1) lstart = i;
@@ -139,10 +142,10 @@ public class Parser {
                 if (rcount == lcount) {
                     rend = i;
                     Node temp = parseParentheticalExpression(lstart, rend);
-                    if (left == null)
-                        left = temp;
-                    else if (middle == null)
+                    if (middle == null)
                         middle = temp;
+                    else if (left == null && !right_defer)
+                        left = temp;
                     else
                         right = temp;
                     lcount = 0;
@@ -151,10 +154,14 @@ public class Parser {
                     rend = -1;
                 }
             } else if (lcount == 0) {
-                
+                if (tt == TokenType.UNARYOP) right_defer = true;
+                else right_defer = false;
+                middle = new Node(u);
             }
         }
-        return null;
+        middle.setLeft(left);
+        middle.setRight(right);
+        return middle;
     }
     
     private Node parseCommand() {

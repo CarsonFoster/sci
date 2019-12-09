@@ -28,20 +28,3 @@ public class Node {
         return t;
     }
 }
-
-/*public class AST {
-    private Node root;
-    
-    public AST(Node r) {
-        root = r;
-    }
-    public AST() {}
-    
-    public void setRoot(Node n) {
-        root = n;
-    }
-    
-    public Node getRoot() {
-        return root;
-    }
-}*/
