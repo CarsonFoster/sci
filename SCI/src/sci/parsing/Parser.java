@@ -47,16 +47,18 @@ public class Parser {
     
     
     public static void main(String[] args) {
-        String test = "((3))";
+        String test = "(((3)+(4)))"; //error on this, but not ((3)+(4))
         ArrayList<Token> start = Lexer.lex(test);
+        Lexer.removeWhitespace(start);
+        System.out.println(start);
         tokens = start;
         //ArrayList<Token> end = parenthesize();
         //System.out.println(end);
+        //end.forEach(x -> System.out.print(x.getContents()));
+        System.out.println("");
         //tokens = end;
-        Node res = parseParentheticalExpression(0, 5);
-        System.out.println(res.getToken().getContents());
-        System.out.println(res.getLeft());
-        System.out.println(res.getRight());
+        Node res = parseParentheticalExpression(0, tokens.size());
+        System.out.println(res);
         //3 + 4 * 6: ((((3)))+(((4))*((6))))
         //(3 + 4) * 6: ((((((((3)))+(((4))))))*((6))))
     }
@@ -140,7 +142,7 @@ public class Parser {
             } else if (tt == TokenType.RPAREN) {
                 rcount++;
                 if (rcount == lcount) {
-                    rend = i;
+                    rend = i + 1;
                     Node temp = parseParentheticalExpression(lstart, rend);
                     if (middle == null)
                         middle = temp;
@@ -156,6 +158,8 @@ public class Parser {
             } else if (lcount == 0) {
                 if (tt == TokenType.UNARYOP) right_defer = true;
                 else right_defer = false;
+                if (middle != null)
+                    left = middle;
                 middle = new Node(u);
             }
         }
