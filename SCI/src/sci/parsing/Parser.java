@@ -47,16 +47,15 @@ public class Parser {
     
     
     public static void main(String[] args) {
-        String test = "(((3)+(4)))"; //error on this, but not ((3)+(4))
+        String test = "-3";
         ArrayList<Token> start = Lexer.lex(test);
-        Lexer.removeWhitespace(start);
         System.out.println(start);
         tokens = start;
-        //ArrayList<Token> end = parenthesize();
-        //System.out.println(end);
-        //end.forEach(x -> System.out.print(x.getContents()));
+        ArrayList<Token> end = parenthesize();
+        System.out.println(end);
+        end.forEach(x -> System.out.print(x.getContents()));
+        tokens = end;
         System.out.println("");
-        //tokens = end;
         Node res = parseParentheticalExpression(0, tokens.size());
         System.out.println(res);
         //3 + 4 * 6: ((((3)))+(((4))*((6))))
@@ -163,8 +162,10 @@ public class Parser {
                 middle = new Node(u);
             }
         }
-        middle.setLeft(left);
-        middle.setRight(right);
+        if (left != null)
+            middle.setLeft(left);
+        if (right != null)
+            middle.setRight(right);
         return middle;
     }
     

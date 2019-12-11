@@ -17,6 +17,7 @@ public class Lexer {
     public static ArrayList<Token> lex(String input) {
         ArrayList<Token> tokens = new ArrayList<>();
         
+        input = input.replaceAll("[ \t]", "");
         String pattern = "";
         for (TokenType t :  TokenType.values()) {
             pattern += "|(?<" + t + ">" + t.pattern + ")";
@@ -43,14 +44,14 @@ public class Lexer {
                 .sum();
     }
     
-    public static void removeWhitespace(List<Token> x) {
+    /*public static void removeWhitespace(List<Token> x) {
         for (int i = 0; i < x.size();) {
             if (x.get(i).getType() == TokenType.WHITESPACE)
                 x.remove(i);
             else
                 i++;
         }
-    }
+    }*/
     
     public static void main(String args[]) {
         //String input = "3.5 + 2 - 3.4 * 0 / 2.0";
@@ -59,7 +60,7 @@ public class Lexer {
         ArrayList<Token> t = lex(input);
         System.out.println(t);
         System.out.println(Lexer.tokenLength(t) + " " + input.length());
-        Lexer.removeWhitespace(t);
+        //Lexer.removeWhitespace(t);
         System.out.println(t);
     }
 }
