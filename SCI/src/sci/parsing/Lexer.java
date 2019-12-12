@@ -14,10 +14,26 @@ import java.util.regex.*;
  * @author fostecar000
  */
 public class Lexer {
+    
+    static String removeSpaces(String input) {
+        ArrayList<Integer> indices = new ArrayList<>();
+        boolean ok = true;
+        for (int i = 0; i < input.length(); i++) {
+            char t = input.charAt(i);
+            if (t == '<') ok = false;
+            else if (t == '>') ok = true;
+            else if ((t == ' ' || t == '\t') && ok) indices.add(i - indices.size());
+        }
+        for (int i : indices) {
+            input = input.substring(0, (i != 0 ? i : 0)) + input.substring(i + 1);
+        }
+        
+        return input;
+    }
+    
     public static ArrayList<Token> lex(String input) {
         ArrayList<Token> tokens = new ArrayList<>();
-        
-        input = input.replaceAll("[ \t]", "");
+        input = removeSpaces(input);
         String pattern = "";
         for (TokenType t :  TokenType.values()) {
             pattern += "|(?<" + t + ">" + t.pattern + ")";
@@ -55,8 +71,9 @@ public class Lexer {
     
     public static void main(String args[]) {
         //String input = "3.5 + 2 - 3.4 * 0 / 2.0";
-        String input = "3^     (4.0 + usigma list1.0)"; //TODO: make sure to include numbers in list names.
+        String input = "3 ^ (4.0 + <usigma list1>)"; //TODO: make sure to include numbers in list names.
         
+        System.out.println(removeSpaces(input));
         ArrayList<Token> t = lex(input);
         System.out.println(t);
         System.out.println(Lexer.tokenLength(t) + " " + input.length());

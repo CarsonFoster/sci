@@ -47,7 +47,7 @@ public class Parser {
     
     
     public static void main(String[] args) {
-        String test = "-3";
+        String test = "-1 + <usigma list1>";
         ArrayList<Token> start = Lexer.lex(test);
         System.out.println(start);
         tokens = start;
@@ -58,6 +58,8 @@ public class Parser {
         System.out.println("");
         Node res = parseParentheticalExpression(0, tokens.size());
         System.out.println(res);
+        ParseTree x = new ParseTree();
+        //System.out.println(x.parse(res));
         //3 + 4 * 6: ((((3)))+(((4))*((6))))
         //(3 + 4) * 6: ((((((((3)))+(((4))))))*((6))))
     }
@@ -122,10 +124,6 @@ public class Parser {
         return ret;
     }
     
-    public Node parseExpression() throws SyntaxException {
-        return null;
-    }
-    
     private static Node parseParentheticalExpression(int start, int end) { // inclusive, exclusive, including parentheses: (, (, 1, ), +, (, 2, ), ) referring to (1) would be 1, 4
         int lcount = 0, rcount = 0, lstart = -1, rend = -1;
         Node left = null, middle = null, right = null;
@@ -155,11 +153,16 @@ public class Parser {
                     rend = -1;
                 }
             } else if (lcount == 0) {
+                if (!right_defer) {
+                    if (middle != null)
+                        left = middle;
+                    middle = new Node(u);
+                } else {
+                    right = new Node(u);
+                    right_defer = false;
+                }
+                
                 if (tt == TokenType.UNARYOP) right_defer = true;
-                else right_defer = false;
-                if (middle != null)
-                    left = middle;
-                middle = new Node(u);
             }
         }
         if (left != null)
@@ -168,7 +171,7 @@ public class Parser {
             middle.setRight(right);
         return middle;
     }
-    
+    /*
     private Node parseCommand() {
         Node lastParsed;
         ArrayList<Node> list = new ArrayList<>();
@@ -211,4 +214,5 @@ public class Parser {
             return new Node(tokens.get(index - 1));
         return null;
     }
+*/
 }

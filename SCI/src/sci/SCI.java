@@ -27,8 +27,8 @@ public class SCI {
     protected static HashMap<String, StatList> quantitative = new HashMap<>();
     protected static HashMap<String, StatList> categorical = new HashMap<>();
     
-    protected static CommandResult res = null;
-    protected static boolean console = true;
+    public static CommandResult res = null;
+    public static boolean console = true;
     
     protected static boolean checkVariable(String var) {
         return var.matches("\\$[a-zA-Z0-9_]+");
@@ -63,6 +63,22 @@ public class SCI {
         res = null;
     }
     
+    public static void runCommand(String line) {
+        String[] tokens = line.split(" "); // split by spaces, so into words/tokens
+        putArgs(tokens); // makes the arguments available to the commands
+        if (commands.get("ober").containsKey(tokens[0])) { // if it's an ober command
+            commands.get("ober").get(tokens[0]).run();
+        } else if (commands.get(module).containsKey(tokens[0])) { // otherwise it must be in the current module
+            commands.get(module).get(tokens[0]).run();
+        } else if (line.startsWith("$")) {
+            if (!checkVariable(line)) {
+                error("\"" + line + "\" is not a valid variable name.");
+            }
+            System.out.println(env.get(line));
+        } else
+            error("\"" + tokens[0] + "\" is not an accepted command."); // otherwise, it's an error
+    }
+    
     public static void main(String[] args) {
         // set up the ober and core commands
         SetUpCommands.main();
@@ -74,20 +90,7 @@ public class SCI {
         while (true) {
             System.out.print("sci." + module + " > "); // print the console prompt
             String line = cin.nextLine().trim(); // grab the line from the console and trim any trailing whitespace
-            String[] tokens = line.split(" "); // split by spaces, so into words/tokens
-            putArgs(tokens); // makes the arguments available to the commands
-            if (commands.get("ober").containsKey(tokens[0])) { // if it's an ober command
-                commands.get("ober").get(tokens[0]).run();
-            } else if (commands.get(module).containsKey(tokens[0])) { // otherwise it must be in the current module
-                commands.get(module).get(tokens[0]).run();
-            } else if (line.startsWith("$")) {
-                if (!checkVariable(line)) {
-                    error("\"" + line + "\" is not a valid variable name.");
-                    continue;
-                }
-                System.out.println(env.get(line));
-            } else
-                error("\"" + tokens[0] + "\" is not an accepted command."); // otherwise, it's an error
+            runCommand(line);
         }
     }
 }
