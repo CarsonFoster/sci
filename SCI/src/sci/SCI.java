@@ -1,9 +1,11 @@
 package sci;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.HashMap;
 import java.util.List;
+import sci.parsing.*;
 
 /**
  *
@@ -58,7 +60,7 @@ public class SCI {
     }
     
     // custom error message
-    protected static void error(String msg) {
+    public static void error(String msg) {
         System.err.println("sci." + module + ": Error: " + msg); // Ex: sci.core: Error: message
         res = null;
     }
@@ -75,6 +77,25 @@ public class SCI {
                 error("\"" + line + "\" is not a valid variable name.");
             }
             System.out.println(env.get(line));
+        } else if (line.startsWith("# ")) {
+            String expr;
+            try {
+                expr = line.substring(2);
+            } catch (Exception e) {
+                error("must be an expression to interpret.");
+                return;
+            }
+            List<Token> ts = Lexer.lex(expr);
+            Parser p = new Parser(ts);
+            Node r = p.parse();
+            ParseTree pt = new ParseTree();
+            if (!pt.syntax(r)) {
+                error("syntax error.");
+                return;
+            }
+            BigDecimal res = pt.parse(r);
+            if (res != null)
+                System.out.println(res);
         } else
             error("\"" + tokens[0] + "\" is not an accepted command."); // otherwise, it's an error
     }

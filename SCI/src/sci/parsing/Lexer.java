@@ -33,7 +33,10 @@ public class Lexer {
     
     public static ArrayList<Token> lex(String input) {
         ArrayList<Token> tokens = new ArrayList<>();
-        input = removeSpaces(input);
+        //input = removeSpaces(input);
+        input = input.replaceAll("\t", " ");
+        input = input.replaceAll(" {2,}", " ");
+        
         String pattern = "";
         for (TokenType t :  TokenType.values()) {
             pattern += "|(?<" + t + ">" + t.pattern + ")";

@@ -42,12 +42,13 @@ add )) at the end of the expression and before each right parenthesis in the ori
     // (((((3))+((4))))*(6))
 
 public class Parser {
-    private static List<Token> tokens;
+    private List<Token> tokens;
     private int index = 0;
+    private boolean parenthesized = false;
     
     
-    public static void main(String[] args) {
-        String test = "-1 + <usigma list1>";
+    /*public static void main(String[] args) {
+        String test = "2 2";
         ArrayList<Token> start = Lexer.lex(test);
         System.out.println(start);
         tokens = start;
@@ -59,15 +60,17 @@ public class Parser {
         Node res = parseParentheticalExpression(0, tokens.size());
         System.out.println(res);
         ParseTree x = new ParseTree();
-        //System.out.println(x.parse(res));
+        System.out.println(x.syntax(res));
+        System.out.println(x.parse(res));
         //3 + 4 * 6: ((((3)))+(((4))*((6))))
         //(3 + 4) * 6: ((((((((3)))+(((4))))))*((6))))
     }
+    */
     
     public Parser(List<Token> t) {
         tokens = t;
     }
-    
+    /*
     private boolean test(TokenType tt) {
         if (tokens.get(index).getType() == tt) {
             index++;
@@ -82,14 +85,14 @@ public class Parser {
     
     private boolean safeTest(TokenType tt, int i) {
         return (tokens.size() > index + i && tokens.get(index + i).getType() == tt);
-    }
+    }*/
     
-    private static void addParen(List<Token> t, int n, boolean left) {
+    private  void addParen(List<Token> t, int n, boolean left) {
         for (int i = 0; i < n; i++)
             t.add(new Token(left ? TokenType.LPAREN : TokenType.RPAREN, left ? "(" : ")"));
     }
     
-    private static ArrayList<Token> parenthesize() {
+    private void parenthesize() {
         ArrayList<Token> ret = new ArrayList<>();
         addParen(ret, 4, true);
         
@@ -121,10 +124,17 @@ public class Parser {
         
         addParen(ret, 4, false);
         
-        return ret;
+        tokens = ret;
+        parenthesized = true;
     }
     
-    private static Node parseParentheticalExpression(int start, int end) { // inclusive, exclusive, including parentheses: (, (, 1, ), +, (, 2, ), ) referring to (1) would be 1, 4
+    public Node parse() {
+        if (!parenthesized)
+            parenthesize();
+        return parseParentheticalExpression(0, tokens.size());
+    }
+    
+    private Node parseParentheticalExpression(int start, int end) { // inclusive, exclusive, including parentheses: (, (, 1, ), +, (, 2, ), ) referring to (1) would be 1, 4
         int lcount = 0, rcount = 0, lstart = -1, rend = -1;
         Node left = null, middle = null, right = null;
         boolean right_defer = false;

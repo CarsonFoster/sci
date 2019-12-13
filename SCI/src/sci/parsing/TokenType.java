@@ -2,7 +2,7 @@ package sci.parsing;
 
 public enum TokenType {
     // order doesn't matter
-    UNARYOP("(?<=(^|[\\(\\+/\\*\\-\\^%]))\\-"),      // - (must be at start of expression, after open paren, after operator)
+    UNARYOP("(?<=(^|[\\(\\+/\\*\\-\\^%] ?))\\-"),      // - (must be at start of expression, after open paren, after operator)
     BINARYOP("[\\+/\\*\\-\\^%]"), // +/*-^%
     LPAREN("\\("), // (
     RPAREN("\\)"), // )
