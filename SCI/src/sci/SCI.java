@@ -93,9 +93,11 @@ public class SCI {
                 error("syntax error.");
                 return;
             }
+            console = false;
             BigDecimal res = pt.parse(r);
             if (res != null)
                 System.out.println(res);
+            console = true;
         } else
             error("\"" + tokens[0] + "\" is not an accepted command."); // otherwise, it's an error
     }
